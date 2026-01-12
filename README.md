@@ -1,3 +1,5 @@
+Live link: http://api.tarifacademy.com
+
 # 🎓 TarifAcademy Backend API
 
 A robust REST API built with **Node.js**, **Express**, **TypeScript**, and **MongoDB** using a modular architecture.
