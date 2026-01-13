@@ -75,6 +75,18 @@ const courseSchema: Schema<ICourse> = new Schema(
       type: Number,
       default: 0,
     },
+    // Soft delete fields
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    deletedAt: {
+      type: Date,
+    },
+    deletedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "Admin",
+    },
   },
   {
     timestamps: true,
