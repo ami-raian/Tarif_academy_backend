@@ -29,7 +29,7 @@ class VideoService {
       courseId: videoData.courseId,
       sectionTitle: videoData.sectionTitle,
       order: videoData.order,
-      bunnyVideoId: bunnyVideo.data.videoLibraryId,
+      bunnyVideoId: bunnyVideo.videoId,
       bunnyGuid: bunnyVideo.videoId,
       isFree: videoData.isFree || false,
       status: "processing",
@@ -51,7 +51,11 @@ class VideoService {
   /**
    * Get all videos for a course (grouped by sections)
    */
-  async getCourseVideos(courseId: string, userId?: string, isStudent: boolean = false) {
+  async getCourseVideos(
+    courseId: string,
+    userId?: string,
+    isStudent: boolean = false
+  ) {
     const videos = await Video.find({ courseId })
       .sort({ sectionTitle: 1, order: 1 })
       .lean();
