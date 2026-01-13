@@ -27,11 +27,16 @@ class CourseService {
       limit = 10,
       category,
       level,
-      isPublished = true,
+      isPublished,
       search,
     } = options;
 
-    const query: Record<string, unknown> = { isPublished };
+    const query: Record<string, unknown> = {};
+
+    // Only filter by isPublished if explicitly set
+    if (isPublished !== undefined) {
+      query.isPublished = isPublished;
+    }
 
     if (category) query.category = category;
     if (level) query.level = level;

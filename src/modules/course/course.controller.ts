@@ -8,7 +8,7 @@ export const getCourses = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { page, limit, category, level, search } = req.query;
+    const { page, limit, category, level, search, isPublished } = req.query;
 
     const result = await courseService.getAllCourses({
       page: page ? parseInt(page as string) : undefined,
@@ -16,6 +16,12 @@ export const getCourses = async (
       category: category as string,
       level: level as string,
       search: search as string,
+      isPublished:
+        isPublished === "false"
+          ? false
+          : isPublished === "all"
+          ? undefined
+          : true,
     });
 
     res.status(200).json({
