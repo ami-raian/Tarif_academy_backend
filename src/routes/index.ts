@@ -6,6 +6,7 @@ import { authRoutes } from "../modules/auth";
 import { adminRoutes } from "../modules/admin";
 import { videoRoutes } from "../modules/video";
 import { enrollmentRoutes } from "../modules/enrollment";
+import testBunnyRoutes from "./test-bunny";
 
 const router: Router = Router();
 
@@ -21,6 +22,9 @@ router.use("/courses", courseRoutes);
 router.use("/students", studentRoutes);
 router.use("/videos", videoRoutes);
 router.use("/enrollments", enrollmentRoutes);
+
+// Test routes (for debugging)
+router.use("/", testBunnyRoutes);
 
 // Future routes will be added here:
 // router.use("/payments", paymentRoutes);

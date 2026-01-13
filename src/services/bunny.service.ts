@@ -10,14 +10,23 @@ class BunnyStreamService {
   private baseURL = "https://video.bunnycdn.com";
 
   constructor() {
-    this.apiKey = process.env.BUNNY_STREAM_API_KEY || "";
-    this.libraryId = process.env.BUNNY_LIBRARY_ID || "";
-    this.cdnHostname = process.env.BUNNY_CDN_HOSTNAME || "";
+    // Trim whitespace from environment variables
+    this.apiKey = (process.env.BUNNY_STREAM_API_KEY || "").trim();
+    this.libraryId = (process.env.BUNNY_LIBRARY_ID || "").trim();
+    this.cdnHostname = (process.env.BUNNY_CDN_HOSTNAME || "").trim();
+
+    // Debug log
+    console.log("🔧 Bunny.net Service Initialized:");
+    console.log("   Library ID:", this.libraryId || "NOT SET");
+    console.log("   API Key:", this.apiKey ? `${this.apiKey.substring(0, 10)}...` : "NOT SET");
+    console.log("   CDN Hostname:", this.cdnHostname || "NOT SET");
 
     if (!this.apiKey || !this.libraryId || !this.cdnHostname) {
       console.warn(
-        "⚠️ Bunny.net credentials not configured. Please set BUNNY_STREAM_API_KEY, BUNNY_LIBRARY_ID, and BUNNY_CDN_HOSTNAME in .env"
+        "\n⚠️ Bunny.net credentials not configured. Please set BUNNY_STREAM_API_KEY, BUNNY_LIBRARY_ID, and BUNNY_CDN_HOSTNAME in .env\n"
       );
+    } else {
+      console.log("✅ Bunny.net configured successfully!\n");
     }
   }
 
@@ -27,6 +36,12 @@ class BunnyStreamService {
    */
   async createVideo(title: string, collectionId?: string) {
     try {
+      console.log("🔧 Bunny.net Config Check:");
+      console.log("   Library ID:", this.libraryId);
+      console.log("   API Key:", this.apiKey ? `${this.apiKey.substring(0, 10)}...` : "NOT SET");
+      console.log("   CDN Hostname:", this.cdnHostname);
+      console.log("   Request URL:", `${this.baseURL}/library/${this.libraryId}/videos`);
+
       const response = await axios.post(
         `${this.baseURL}/library/${this.libraryId}/videos`,
         {
@@ -47,11 +62,12 @@ class BunnyStreamService {
         data: response.data,
       };
     } catch (error: any) {
-      console.error(
-        "Error creating video in Bunny.net:",
-        error.response?.data || error.message
-      );
-      throw new Error("Failed to create video in Bunny Stream");
+      console.error("❌ Bunny.net Error Details:");
+      console.error("   Status:", error.response?.status);
+      console.error("   Status Text:", error.response?.statusText);
+      console.error("   Error Data:", JSON.stringify(error.response?.data, null, 2));
+      console.error("   Error Message:", error.message);
+      throw new Error(`Failed to create video in Bunny Stream: ${error.response?.data?.Message || error.message}`);
     }
   }
 
