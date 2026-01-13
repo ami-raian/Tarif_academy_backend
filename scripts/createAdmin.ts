@@ -29,8 +29,8 @@ async function createAdmin() {
     // Admin details
     const adminData = {
       fullName: "Super Admin",
-      email: "admin@tarifacademy.com",
-      password: "admin123456", // Change this!
+      email: "super_admin@tarifacademy.com",
+      password: "@super_admin123456", // Change this!
       role: "super_admin",
       isActive: true,
       type: "admin",
