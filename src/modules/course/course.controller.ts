@@ -8,7 +8,7 @@ export const getCourses = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { page, limit, category, level, search } = req.query;
+    const { page, limit, category, level, search, isPublished } = req.query;
 
     const result = await courseService.getAllCourses({
       page: page ? parseInt(page as string) : undefined,
@@ -16,6 +16,12 @@ export const getCourses = async (
       category: category as string,
       level: level as string,
       search: search as string,
+      isPublished:
+        isPublished === "false"
+          ? false
+          : isPublished === "all"
+          ? undefined
+          : true,
     });
 
     res.status(200).json({
@@ -119,10 +125,7 @@ export const updateCourse = async (
   res: Response
 ): Promise<void> => {
   try {
-    const course = await courseService.updateCourse(
-      req.params.id as string,
-      req.body
-    );
+    const course = await courseService.getCourseById(req.params.id as string);
 
     if (!course) {
       res.status(404).json({
@@ -132,9 +135,38 @@ export const updateCourse = async (
       return;
     }
 
+    // Permission check: admin (super_admin/admin) OR course owner (instructor)
+    const user = req.user;
+    const isAdmin =
+      user &&
+      user.type === "admin" &&
+      ["super_admin", "admin"].includes(user.role);
+    const isOwner = user && String(course.instructor) === user.id;
+
+    if (!isAdmin && !isOwner) {
+      res.status(403).json({
+        success: false,
+        message: "Access denied. You cannot update this course.",
+      });
+      return;
+    }
+
+    const updated = await courseService.updateCourse(
+      req.params.id as string,
+      req.body
+    );
+
+    if (!updated) {
+      res.status(404).json({
+        success: false,
+        message: "Course not found or could not be updated",
+      });
+      return;
+    }
+
     res.status(200).json({
       success: true,
-      data: course,
+      data: updated,
     });
   } catch (error) {
     res.status(400).json({
@@ -151,9 +183,13 @@ export const deleteCourse = async (
   res: Response
 ): Promise<void> => {
   try {
-    const course = await courseService.deleteCourse(req.params.id as string);
+    // Only super_admin can reach this route (route-protected). Perform soft-delete and record who deleted.
+    const deleted = await courseService.deleteCourse(
+      req.params.id as string,
+      req.user!.id
+    );
 
-    if (!course) {
+    if (!deleted) {
       res.status(404).json({
         success: false,
         message: "Course not found",
@@ -164,6 +200,7 @@ export const deleteCourse = async (
     res.status(200).json({
       success: true,
       message: "Course deleted successfully",
+      data: deleted,
     });
   } catch (error) {
     res.status(500).json({

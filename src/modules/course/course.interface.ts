@@ -17,6 +17,10 @@ export interface ICourse extends Document {
   enrolledStudents: number;
   rating: number;
   totalReviews: number;
+  // Soft delete
+  isDeleted?: boolean;
+  deletedAt?: Date;
+  deletedBy?: string;
   createdAt: Date;
   updatedAt: Date;
 }

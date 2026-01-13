@@ -27,11 +27,19 @@ class CourseService {
       limit = 10,
       category,
       level,
-      isPublished = true,
+      isPublished,
       search,
     } = options;
 
-    const query: Record<string, unknown> = { isPublished };
+    const query: Record<string, unknown> = {};
+
+    // Only filter by isPublished if explicitly set
+    if (isPublished !== undefined) {
+      query.isPublished = isPublished;
+    }
+
+    // Exclude soft-deleted courses
+    query.isDeleted = false;
 
     if (category) query.category = category;
     if (level) query.level = level;
@@ -63,12 +71,18 @@ class CourseService {
 
   // Get course by ID
   async getCourseById(id: string): Promise<ICourse | null> {
-    return await Course.findById(id).populate("instructor", "name email");
+    return await Course.findOne({ _id: id, isDeleted: false }).populate(
+      "instructor",
+      "name email"
+    );
   }
 
   // Get course by slug
   async getCourseBySlug(slug: string): Promise<ICourse | null> {
-    return await Course.findOne({ slug }).populate("instructor", "name email");
+    return await Course.findOne({ slug, isDeleted: false }).populate(
+      "instructor",
+      "name email"
+    );
   }
 
   // Create new course
@@ -81,20 +95,29 @@ class CourseService {
     id: string,
     courseData: IUpdateCourseInput
   ): Promise<ICourse | null> {
-    return await Course.findByIdAndUpdate(id, courseData, {
-      new: true,
-      runValidators: true,
-    });
+    // Only update if not soft-deleted
+    return await Course.findOneAndUpdate(
+      { _id: id, isDeleted: false },
+      courseData,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
   }
 
-  // Delete course
-  async deleteCourse(id: string): Promise<ICourse | null> {
-    return await Course.findByIdAndDelete(id);
+  // Soft delete course (record who deleted)
+  async deleteCourse(id: string, deletedBy?: string): Promise<ICourse | null> {
+    return await Course.findOneAndUpdate(
+      { _id: id, isDeleted: false },
+      { isDeleted: true, deletedAt: new Date(), deletedBy },
+      { new: true }
+    );
   }
 
   // Publish/Unpublish course
   async togglePublish(id: string): Promise<ICourse | null> {
-    const course = await Course.findById(id);
+    const course = await Course.findOne({ _id: id, isDeleted: false });
     if (!course) return null;
 
     course.isPublished = !course.isPublished;
@@ -104,7 +127,10 @@ class CourseService {
 
   // Get courses by instructor
   async getCoursesByInstructor(instructorId: string): Promise<ICourse[]> {
-    return await Course.find({ instructor: instructorId }).sort({
+    return await Course.find({
+      instructor: instructorId,
+      isDeleted: false,
+    }).sort({
       createdAt: -1,
     });
   }

@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx ts-node:*)",
+      "Bash(npm run dev:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(node test-bunny-direct.js:*)",
+      "Bash(copy:*)",
+      "Bash(copy .env.new .env)"
+    ]
+  }
+}
