@@ -9,15 +9,44 @@ const app: Application = express();
 const API_VERSION = process.env.API_VERSION || "v1";
 
 // CORS Configuration
-const corsOptions = {
-  origin: process.env.FRONTEND_URL || "http://localhost:3000",
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-};
+// const corsOptions = {
+//   origin: function (origin: string | undefined, callback: Function) {
+//     const allowedOrigins = [
+//       process.env.FRONTEND_URL || "http://localhost:3000",
+//       "http://localhost:3000",
+//       "http://localhost:5173",
+//       "http://localhost:5174",
+//     ];
+
+//     // Allow requests with no origin (like mobile apps or Postman)
+//     if (!origin || allowedOrigins.includes(origin)) {
+//       callback(null, true);
+//     } else {
+//       callback(null, true); // Allow all origins in development
+//     }
+//   },
+//   credentials: true,
+//   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+//   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+//   optionsSuccessStatus: 200,
+// };
 
 // Middleware
-app.use(cors(corsOptions));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "https://www.tarifacademy.com",
+      `${process.env.FRONTEND_URL}`,
+    ],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  }),
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

@@ -5,7 +5,7 @@ import courseService from "./course.service";
 // @route   GET /api/courses
 export const getCourses = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { page, limit, category, level, search, isPublished } = req.query;
@@ -20,8 +20,8 @@ export const getCourses = async (
         isPublished === "false"
           ? false
           : isPublished === "all"
-          ? undefined
-          : true,
+            ? undefined
+            : true,
     });
 
     const pageSize = limit ? parseInt(limit as string) : 10;
@@ -39,10 +39,12 @@ export const getCourses = async (
       },
     });
   } catch (error) {
+    console.error("Error fetching courses:", error);
     res.status(500).json({
       success: false,
       statusCode: 500,
-      message: "Server Error",
+      message:
+        error instanceof Error ? error.message : "Error fetching courses",
     });
   }
 };
@@ -69,10 +71,11 @@ export const getCourse = async (req: Request, res: Response): Promise<void> => {
       data: course,
     });
   } catch (error) {
+    console.error("Error fetching course:", error);
     res.status(500).json({
       success: false,
       statusCode: 500,
-      message: "Server Error",
+      message: error instanceof Error ? error.message : "Error fetching course",
     });
   }
 };
@@ -81,11 +84,11 @@ export const getCourse = async (req: Request, res: Response): Promise<void> => {
 // @route   GET /api/courses/slug/:slug
 export const getCourseBySlug = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const course = await courseService.getCourseBySlug(
-      req.params.slug as string
+      req.params.slug as string,
     );
 
     if (!course) {
@@ -116,7 +119,7 @@ export const getCourseBySlug = async (
 // @route   POST /api/courses
 export const createCourse = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const course = await courseService.createCourse(req.body);
@@ -140,7 +143,7 @@ export const createCourse = async (
 // @route   PUT /api/courses/:id
 export const updateCourse = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const course = await courseService.getCourseById(req.params.id as string);
@@ -173,7 +176,7 @@ export const updateCourse = async (
 
     const updated = await courseService.updateCourse(
       req.params.id as string,
-      req.body
+      req.body,
     );
 
     if (!updated) {
@@ -204,13 +207,13 @@ export const updateCourse = async (
 // @route   DELETE /api/courses/:id
 export const deleteCourse = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     // Only super_admin can reach this route (route-protected). Perform soft-delete and record who deleted.
     const deleted = await courseService.deleteCourse(
       req.params.id as string,
-      req.user!.id
+      req.user!.id,
     );
 
     if (!deleted) {
@@ -229,10 +232,11 @@ export const deleteCourse = async (
       data: deleted,
     });
   } catch (error) {
+    console.error("Error deleting course:", error);
     res.status(500).json({
       success: false,
       statusCode: 500,
-      message: "Server Error",
+      message: error instanceof Error ? error.message : "Error deleting course",
     });
   }
 };
@@ -241,7 +245,7 @@ export const deleteCourse = async (
 // @route   PATCH /api/courses/:id/publish
 export const togglePublish = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const course = await courseService.togglePublish(req.params.id as string);
@@ -264,10 +268,12 @@ export const togglePublish = async (
       data: course,
     });
   } catch (error) {
+    console.error("Error toggling course publish status:", error);
     res.status(500).json({
       success: false,
       statusCode: 500,
-      message: "Server Error",
+      message:
+        error instanceof Error ? error.message : "Error updating course status",
     });
   }
 };
@@ -276,11 +282,11 @@ export const togglePublish = async (
 // @route   GET /api/courses/instructor/:instructorId
 export const getInstructorCourses = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const courses = await courseService.getCoursesByInstructor(
-      req.params.instructorId as string
+      req.params.instructorId as string,
     );
 
     res.status(200).json({
@@ -290,10 +296,14 @@ export const getInstructorCourses = async (
       data: courses,
     });
   } catch (error) {
+    console.error("Error fetching instructor courses:", error);
     res.status(500).json({
       success: false,
       statusCode: 500,
-      message: "Server Error",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Error fetching instructor courses",
     });
   }
 };
