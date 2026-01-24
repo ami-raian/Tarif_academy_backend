@@ -24,17 +24,24 @@ export const getCourses = async (
           : true,
     });
 
+    const pageSize = limit ? parseInt(limit as string) : 10;
+
     res.status(200).json({
       success: true,
-      count: result.courses.length,
-      total: result.total,
-      page: result.page,
-      totalPages: result.totalPages,
+      statusCode: 200,
+      message: "Courses fetched successfully",
       data: result.courses,
+      pagination: {
+        totalItems: result.total,
+        totalPages: result.totalPages,
+        currentPage: result.page,
+        pageSize: pageSize,
+      },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
+      statusCode: 500,
       message: "Server Error",
     });
   }
@@ -49,6 +56,7 @@ export const getCourse = async (req: Request, res: Response): Promise<void> => {
     if (!course) {
       res.status(404).json({
         success: false,
+        statusCode: 404,
         message: "Course not found",
       });
       return;
@@ -56,11 +64,14 @@ export const getCourse = async (req: Request, res: Response): Promise<void> => {
 
     res.status(200).json({
       success: true,
+      statusCode: 200,
+      message: "Course fetched successfully",
       data: course,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
+      statusCode: 500,
       message: "Server Error",
     });
   }
@@ -80,6 +91,7 @@ export const getCourseBySlug = async (
     if (!course) {
       res.status(404).json({
         success: false,
+        statusCode: 404,
         message: "Course not found",
       });
       return;
@@ -87,11 +99,14 @@ export const getCourseBySlug = async (
 
     res.status(200).json({
       success: true,
+      statusCode: 200,
+      message: "Course fetched successfully",
       data: course,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
+      statusCode: 500,
       message: "Server Error",
     });
   }
@@ -108,11 +123,14 @@ export const createCourse = async (
 
     res.status(201).json({
       success: true,
+      statusCode: 201,
+      message: "Course created successfully",
       data: course,
     });
   } catch (error) {
     res.status(400).json({
       success: false,
+      statusCode: 400,
       message: error instanceof Error ? error.message : "Error creating course",
     });
   }
@@ -130,6 +148,7 @@ export const updateCourse = async (
     if (!course) {
       res.status(404).json({
         success: false,
+        statusCode: 404,
         message: "Course not found",
       });
       return;
@@ -146,6 +165,7 @@ export const updateCourse = async (
     if (!isAdmin && !isOwner) {
       res.status(403).json({
         success: false,
+        statusCode: 403,
         message: "Access denied. You cannot update this course.",
       });
       return;
@@ -159,6 +179,7 @@ export const updateCourse = async (
     if (!updated) {
       res.status(404).json({
         success: false,
+        statusCode: 404,
         message: "Course not found or could not be updated",
       });
       return;
@@ -166,11 +187,14 @@ export const updateCourse = async (
 
     res.status(200).json({
       success: true,
+      statusCode: 200,
+      message: "Course updated successfully",
       data: updated,
     });
   } catch (error) {
     res.status(400).json({
       success: false,
+      statusCode: 400,
       message: error instanceof Error ? error.message : "Error updating course",
     });
   }
@@ -192,6 +216,7 @@ export const deleteCourse = async (
     if (!deleted) {
       res.status(404).json({
         success: false,
+        statusCode: 404,
         message: "Course not found",
       });
       return;
@@ -199,12 +224,14 @@ export const deleteCourse = async (
 
     res.status(200).json({
       success: true,
+      statusCode: 200,
       message: "Course deleted successfully",
       data: deleted,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
+      statusCode: 500,
       message: "Server Error",
     });
   }
@@ -222,6 +249,7 @@ export const togglePublish = async (
     if (!course) {
       res.status(404).json({
         success: false,
+        statusCode: 404,
         message: "Course not found",
       });
       return;
@@ -229,6 +257,7 @@ export const togglePublish = async (
 
     res.status(200).json({
       success: true,
+      statusCode: 200,
       message: course.isPublished
         ? "Course published successfully"
         : "Course unpublished successfully",
@@ -237,6 +266,7 @@ export const togglePublish = async (
   } catch (error) {
     res.status(500).json({
       success: false,
+      statusCode: 500,
       message: "Server Error",
     });
   }
@@ -255,12 +285,14 @@ export const getInstructorCourses = async (
 
     res.status(200).json({
       success: true,
-      count: courses.length,
+      statusCode: 200,
+      message: "Instructor courses fetched successfully",
       data: courses,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
+      statusCode: 500,
       message: "Server Error",
     });
   }
