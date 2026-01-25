@@ -108,6 +108,44 @@ class BunnyStreamService {
   }
 
   /**
+   * Upload video from buffer (for multer uploads)
+   * @param videoId - The GUID from createVideo()
+   * @param buffer - Video file buffer
+   */
+  async uploadVideoFromBuffer(videoId: string, buffer: Buffer) {
+    try {
+      console.log(`📤 Uploading video buffer to Bunny (${(buffer.length / 1024 / 1024).toFixed(2)} MB)...`);
+
+      const response = await axios.put(
+        `${this.baseURL}/library/${this.libraryId}/videos/${videoId}`,
+        buffer,
+        {
+          headers: {
+            AccessKey: this.apiKey,
+            "Content-Type": "application/octet-stream",
+          },
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity,
+        }
+      );
+
+      console.log(`✅ Video uploaded successfully to Bunny`);
+
+      return {
+        success: true,
+        message: "Video uploaded successfully",
+        data: response.data,
+      };
+    } catch (error: any) {
+      console.error(
+        "❌ Error uploading video to Bunny.net:",
+        error.response?.data || error.message
+      );
+      throw new Error(`Failed to upload video to Bunny Stream: ${error.response?.data?.Message || error.message}`);
+    }
+  }
+
+  /**
    * Get video information
    */
   async getVideoInfo(videoId: string) {
