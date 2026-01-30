@@ -23,6 +23,12 @@ const enrollmentSchema: Schema<IEnrollment> = new Schema(
       type: Date,
       // Optional: for courses with expiry (e.g., 6 months access)
     },
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+      index: true,
+    },
     paymentStatus: {
       type: String,
       enum: ["pending", "completed", "failed"],
@@ -56,6 +62,24 @@ const enrollmentSchema: Schema<IEnrollment> = new Schema(
     isActive: {
       type: Boolean,
       default: true,
+    },
+    approvedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "Admin",
+    },
+    approvedAt: {
+      type: Date,
+    },
+    rejectedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "Admin",
+    },
+    rejectedAt: {
+      type: Date,
+    },
+    rejectionReason: {
+      type: String,
+      trim: true,
     },
   },
   {
