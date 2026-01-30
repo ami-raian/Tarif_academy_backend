@@ -30,26 +30,24 @@ class EnrollmentService {
       throw new Error("Already enrolled in this course");
     }
 
-    // Create enrollment
+    // Create enrollment with pending status (requires admin approval)
     const enrollment = await Enrollment.create({
       studentId: enrollmentData.studentId,
       courseId: enrollmentData.courseId,
       paymentAmount: enrollmentData.paymentAmount,
       transactionId: enrollmentData.transactionId,
       paymentStatus: "completed",
+      status: "pending",
       enrolledAt: new Date(),
     });
 
-    // Update course enrolled students count
-    await Course.findByIdAndUpdate(enrollmentData.courseId, {
-      $inc: { enrolledStudents: 1 },
-    });
+    // Note: enrolledStudents count is updated only when admin approves
 
     return enrollment;
   }
 
   /**
-   * Get student's all enrollments
+   * Get student's all enrollments (only approved ones for course access)
    */
   async getStudentEnrollments(studentId: string) {
     const enrollments = await Enrollment.find({ studentId, isActive: true })
@@ -57,6 +55,98 @@ class EnrollmentService {
       .sort({ enrolledAt: -1 });
 
     return enrollments;
+  }
+
+  /**
+   * Get all enrollments for admin (with filters)
+   */
+  async getAllEnrollments(filters: { status?: string; page?: number; limit?: number }) {
+    const { status, page = 1, limit = 20 } = filters;
+
+    const query: any = {};
+    if (status) {
+      query.status = status;
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [enrollments, total] = await Promise.all([
+      Enrollment.find(query)
+        .populate("studentId", "fullName email phone")
+        .populate("courseId", "title price thumbnail")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Enrollment.countDocuments(query),
+    ]);
+
+    return {
+      enrollments,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  /**
+   * Approve enrollment (Admin only)
+   */
+  async approveEnrollment(enrollmentId: string, adminId: string) {
+    const enrollment = await Enrollment.findById(enrollmentId);
+
+    if (!enrollment) {
+      throw new Error("Enrollment not found");
+    }
+
+    if (enrollment.status === "approved") {
+      throw new Error("Enrollment is already approved");
+    }
+
+    if (enrollment.status === "rejected") {
+      throw new Error("Cannot approve a rejected enrollment");
+    }
+
+    enrollment.status = "approved";
+    enrollment.approvedBy = adminId as any;
+    enrollment.approvedAt = new Date();
+    await enrollment.save();
+
+    // Update course enrolled students count
+    await Course.findByIdAndUpdate(enrollment.courseId, {
+      $inc: { enrolledStudents: 1 },
+    });
+
+    return enrollment;
+  }
+
+  /**
+   * Reject enrollment (Admin only)
+   */
+  async rejectEnrollment(enrollmentId: string, adminId: string, reason?: string) {
+    const enrollment = await Enrollment.findById(enrollmentId);
+
+    if (!enrollment) {
+      throw new Error("Enrollment not found");
+    }
+
+    if (enrollment.status === "rejected") {
+      throw new Error("Enrollment is already rejected");
+    }
+
+    if (enrollment.status === "approved") {
+      throw new Error("Cannot reject an approved enrollment");
+    }
+
+    enrollment.status = "rejected";
+    enrollment.rejectedBy = adminId as any;
+    enrollment.rejectedAt = new Date();
+    enrollment.rejectionReason = reason || "";
+    await enrollment.save();
+
+    return enrollment;
   }
 
   /**
@@ -76,7 +166,7 @@ class EnrollmentService {
   }
 
   /**
-   * Check if student is enrolled in a course
+   * Check if student is enrolled in a course (only approved enrollments)
    */
   async checkEnrollment(studentId: string, courseId: string) {
     const enrollment = await Enrollment.findOne({
@@ -86,7 +176,8 @@ class EnrollmentService {
     });
 
     return {
-      isEnrolled: !!enrollment,
+      isEnrolled: enrollment?.status === "approved",
+      status: enrollment?.status || null,
       enrollment,
     };
   }

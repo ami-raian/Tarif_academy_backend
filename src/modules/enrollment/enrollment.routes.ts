@@ -11,6 +11,9 @@ router.get("/check/:courseId", protectStudent, enrollmentController.checkEnrollm
 router.get("/progress/:courseId", protectStudent, enrollmentController.getCourseProgress);
 
 // Admin routes
+router.get("/admin/all", protectAdmin, enrollmentController.getAllEnrollments);
+router.patch("/:enrollmentId/approve", protectAdmin, enrollmentController.approveEnrollment);
+router.patch("/:enrollmentId/reject", protectAdmin, enrollmentController.rejectEnrollment);
 router.delete("/:enrollmentId", protectAdmin, enrollmentController.cancelEnrollment);
 
 export default router;

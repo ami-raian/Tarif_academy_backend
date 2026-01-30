@@ -12,7 +12,8 @@
       "Bash(copy .env.new .env)",
       "Bash(ls:*)",
       "Bash(timeout:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(dir:*)"
     ]
   }
 }

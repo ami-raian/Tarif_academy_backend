@@ -97,6 +97,63 @@ class EnrollmentController {
       return errorResponse(res, error.message);
     }
   }
+
+  /**
+   * Get all enrollments (Admin only)
+   * GET /api/v1/enrollments/admin/all
+   */
+  async getAllEnrollments(req: Request, res: Response) {
+    try {
+      const { status, page, limit } = req.query;
+      const result = await enrollmentService.getAllEnrollments({
+        status: status as string,
+        page: page ? parseInt(page as string) : undefined,
+        limit: limit ? parseInt(limit as string) : undefined,
+      });
+      return successResponse(res, result);
+    } catch (error: any) {
+      return errorResponse(res, error.message);
+    }
+  }
+
+  /**
+   * Approve enrollment (Admin only)
+   * PATCH /api/v1/enrollments/:enrollmentId/approve
+   */
+  async approveEnrollment(req: Request, res: Response) {
+    try {
+      const adminId = req.user?.id;
+      if (!adminId) {
+        return errorResponse(res, "Authentication required", 401);
+      }
+
+      const enrollmentId = req.params.enrollmentId as string;
+      const enrollment = await enrollmentService.approveEnrollment(enrollmentId, adminId);
+      return successResponse(res, enrollment, "Enrollment approved successfully");
+    } catch (error: any) {
+      return errorResponse(res, error.message);
+    }
+  }
+
+  /**
+   * Reject enrollment (Admin only)
+   * PATCH /api/v1/enrollments/:enrollmentId/reject
+   */
+  async rejectEnrollment(req: Request, res: Response) {
+    try {
+      const adminId = req.user?.id;
+      if (!adminId) {
+        return errorResponse(res, "Authentication required", 401);
+      }
+
+      const enrollmentId = req.params.enrollmentId as string;
+      const { reason } = req.body;
+      const enrollment = await enrollmentService.rejectEnrollment(enrollmentId, adminId, reason);
+      return successResponse(res, enrollment, "Enrollment rejected successfully");
+    } catch (error: any) {
+      return errorResponse(res, error.message);
+    }
+  }
 }
 
 export default new EnrollmentController();
