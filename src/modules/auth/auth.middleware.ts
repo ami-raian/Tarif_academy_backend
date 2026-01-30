@@ -2,11 +2,21 @@ import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "./auth.utils";
 import { IJwtPayload } from "../admin/admin.interface";
 
-// Extend Express Request to include user
+// Extend Express Request to include user and multer file
 declare global {
   namespace Express {
     interface Request {
       user?: IJwtPayload;
+    }
+    namespace Multer {
+      interface File {
+        fieldname: string;
+        originalname: string;
+        encoding: string;
+        mimetype: string;
+        size: number;
+        buffer: Buffer;
+      }
     }
   }
 }

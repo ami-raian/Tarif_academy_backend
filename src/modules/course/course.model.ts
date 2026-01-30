@@ -90,16 +90,30 @@ const courseSchema: Schema<ICourse> = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Generate slug from title before saving
-courseSchema.pre("save", function () {
+courseSchema.pre("save", async function () {
   if (this.isModified("title")) {
-    this.slug = this.title
+    const baseSlug = this.title
       .toLowerCase()
       .replace(/[^a-zA-Z0-9 ]/g, "")
-      .replace(/\s+/g, "-");
+      .replace(/\s+/g, "-")
+      .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
+
+    let slug = baseSlug;
+    let counter = 1;
+
+    // Check for uniqueness
+    while (
+      await mongoose.model("Course").findOne({ slug, _id: { $ne: this._id } })
+    ) {
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
+    this.slug = slug;
   }
 });
 

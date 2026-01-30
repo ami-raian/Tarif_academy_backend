@@ -22,58 +22,70 @@ class CourseService {
     page: number;
     totalPages: number;
   }> {
-    const {
-      page = 1,
-      limit = 10,
-      category,
-      level,
-      isPublished,
-      search,
-    } = options;
+    try {
+      const {
+        page = 1,
+        limit = 10,
+        category,
+        level,
+        isPublished,
+        search,
+      } = options;
 
-    const query: Record<string, unknown> = {};
+      const query: Record<string, unknown> = {};
 
-    // Only filter by isPublished if explicitly set
-    if (isPublished !== undefined) {
-      query.isPublished = isPublished;
+      // Only filter by isPublished if explicitly set
+      if (isPublished !== undefined) {
+        query.isPublished = isPublished;
+      }
+
+      // Exclude soft-deleted courses
+      query.isDeleted = false;
+
+      if (category) query.category = category;
+      if (level) query.level = level;
+      if (search) {
+        query.$or = [
+          { title: { $regex: search, $options: "i" } },
+          { description: { $regex: search, $options: "i" } },
+        ];
+      }
+
+      const skip = (page - 1) * limit;
+
+      const [courses, total] = await Promise.all([
+        Course.find(query)
+          .populate({
+            path: "instructor",
+            select: "name email",
+            options: { strictPopulate: false },
+          })
+          .skip(skip)
+          .limit(limit)
+          .sort({ createdAt: -1 })
+          .lean(),
+        Course.countDocuments(query),
+      ]);
+
+      return {
+        courses: courses as ICourse[],
+        total,
+        page,
+        totalPages: Math.ceil(total / limit),
+      };
+    } catch (error) {
+      console.error("Error in getAllCourses service:", error);
+      throw new Error(
+        error instanceof Error ? error.message : "Failed to fetch courses",
+      );
     }
-
-    // Exclude soft-deleted courses
-    query.isDeleted = false;
-
-    if (category) query.category = category;
-    if (level) query.level = level;
-    if (search) {
-      query.$or = [
-        { title: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
-      ];
-    }
-
-    const skip = (page - 1) * limit;
-
-    const [courses, total] = await Promise.all([
-      Course.find(query)
-        .populate("instructor", "name email")
-        .skip(skip)
-        .limit(limit)
-        .sort({ createdAt: -1 }),
-      Course.countDocuments(query),
-    ]);
-
-    return {
-      courses,
-      total,
-      page,
-      totalPages: Math.ceil(total / limit),
-    };
   }
 
   // Get course by ID
   async getCourseById(id: string): Promise<ICourse | null> {
     return await Course.findOne({ _id: id, isDeleted: false }).populate(
       "instructor",
-      "name email"
+      "name email",
     );
   }
 
@@ -81,7 +93,7 @@ class CourseService {
   async getCourseBySlug(slug: string): Promise<ICourse | null> {
     return await Course.findOne({ slug, isDeleted: false }).populate(
       "instructor",
-      "name email"
+      "name email",
     );
   }
 
@@ -93,7 +105,7 @@ class CourseService {
   // Update course
   async updateCourse(
     id: string,
-    courseData: IUpdateCourseInput
+    courseData: IUpdateCourseInput,
   ): Promise<ICourse | null> {
     // Only update if not soft-deleted
     return await Course.findOneAndUpdate(
@@ -102,7 +114,7 @@ class CourseService {
       {
         new: true,
         runValidators: true,
-      }
+      },
     );
   }
 
@@ -111,7 +123,7 @@ class CourseService {
     return await Course.findOneAndUpdate(
       { _id: id, isDeleted: false },
       { isDeleted: true, deletedAt: new Date(), deletedBy },
-      { new: true }
+      { new: true },
     );
   }
 
@@ -140,7 +152,7 @@ class CourseService {
     return await Course.findByIdAndUpdate(
       id,
       { $inc: { enrolledStudents: 1 } },
-      { new: true }
+      { new: true },
     );
   }
 }

@@ -6,6 +6,7 @@ import { authRoutes } from "../modules/auth";
 import { adminRoutes } from "../modules/admin";
 import { videoRoutes } from "../modules/video";
 import { enrollmentRoutes } from "../modules/enrollment";
+import { webhookRoutes } from "../modules/webhook";
 import testBunnyRoutes from "./test-bunny";
 
 const router: Router = Router();
@@ -22,6 +23,9 @@ router.use("/courses", courseRoutes);
 router.use("/students", studentRoutes);
 router.use("/videos", videoRoutes);
 router.use("/enrollments", enrollmentRoutes);
+
+// Webhook routes (for external services like Bunny.net)
+router.use("/webhooks", webhookRoutes);
 
 // Test routes (for debugging)
 router.use("/", testBunnyRoutes);

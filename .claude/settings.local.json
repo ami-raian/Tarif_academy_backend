@@ -9,7 +9,10 @@
       "Bash(taskkill:*)",
       "Bash(node test-bunny-direct.js:*)",
       "Bash(copy:*)",
-      "Bash(copy .env.new .env)"
+      "Bash(copy .env.new .env)",
+      "Bash(ls:*)",
+      "Bash(timeout:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

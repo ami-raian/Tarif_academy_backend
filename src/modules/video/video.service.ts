@@ -49,6 +49,69 @@ class VideoService {
   }
 
   /**
+   * Create video entry and upload file in one step
+   * This handles both database entry creation and file upload to Bunny
+   */
+  async createAndUploadVideo(
+    videoData: ICreateVideoInput,
+    fileBuffer: Buffer,
+    adminId: string
+  ) {
+    // Check if course exists
+    const course = await Course.findById(videoData.courseId);
+    if (!course) {
+      throw new Error("Course not found");
+    }
+
+    console.log(`📹 Creating video "${videoData.title}" for course "${course.title}"`);
+
+    // Step 1: Create video entry in Bunny Stream
+    const bunnyVideo = await bunnyService.createVideo(videoData.title);
+
+    if (!bunnyVideo.success) {
+      throw new Error("Failed to create video in Bunny Stream");
+    }
+
+    console.log(`✅ Bunny video created with GUID: ${bunnyVideo.videoId}`);
+
+    // Step 2: Upload the file to Bunny
+    const uploadResult = await bunnyService.uploadVideoFromBuffer(
+      bunnyVideo.videoId,
+      fileBuffer
+    );
+
+    if (!uploadResult.success) {
+      throw new Error("Failed to upload video file to Bunny Stream");
+    }
+
+    // Step 3: Create video document in database
+    const video = await Video.create({
+      title: videoData.title,
+      description: videoData.description,
+      courseId: videoData.courseId,
+      sectionTitle: videoData.sectionTitle,
+      order: videoData.order,
+      bunnyVideoId: bunnyVideo.videoId,
+      bunnyGuid: bunnyVideo.videoId,
+      isFree: videoData.isFree || false,
+      status: "processing", // Will be updated by webhook when encoding completes
+    });
+
+    // Step 4: Update course's total lessons count
+    await Course.findByIdAndUpdate(videoData.courseId, {
+      $inc: { totalLessons: 1 },
+    });
+
+    console.log(`✅ Video "${videoData.title}" created and uploaded successfully`);
+
+    return {
+      video,
+      bunnyGuid: bunnyVideo.videoId,
+      message: "Video created and uploaded successfully. Processing will begin shortly.",
+    };
+  }
+
+  /**
    * Get all videos for a course (grouped by sections)
    */
   async getCourseVideos(

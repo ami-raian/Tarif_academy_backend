@@ -21,6 +21,64 @@ class VideoController {
   }
 
   /**
+   * Upload video with file (Admin only) - Single step upload
+   * POST /api/v1/videos/upload
+   * Content-Type: multipart/form-data
+   *
+   * Body:
+   * - video: File (required)
+   * - title: string (required)
+   * - description: string (optional)
+   * - courseId: string (required)
+   * - sectionTitle: string (required)
+   * - order: number (required)
+   * - isFree: boolean (optional)
+   */
+  async uploadVideo(req: Request, res: Response) {
+    try {
+      const adminId = req.user?.id;
+      if (!adminId) {
+        return errorResponse(res, "Authentication required", 401);
+      }
+
+      // Check if file was uploaded
+      if (!req.file) {
+        return errorResponse(res, "Video file is required", 400);
+      }
+
+      // Validate required fields
+      const { title, courseId, sectionTitle, order } = req.body;
+      if (!title || !courseId || !sectionTitle || !order) {
+        return errorResponse(
+          res,
+          "Missing required fields: title, courseId, sectionTitle, order",
+          400
+        );
+      }
+
+      const videoData = {
+        title,
+        description: req.body.description || "",
+        courseId,
+        sectionTitle,
+        order: parseInt(order, 10),
+        isFree: req.body.isFree === "true" || req.body.isFree === true,
+      };
+
+      const result = await videoService.createAndUploadVideo(
+        videoData,
+        req.file.buffer,
+        adminId
+      );
+
+      return createdResponse(res, result, result.message);
+    } catch (error: any) {
+      console.error("❌ Video upload error:", error.message);
+      return errorResponse(res, error.message);
+    }
+  }
+
+  /**
    * Get all videos for a course
    * GET /api/v1/videos/course/:courseId
    */
