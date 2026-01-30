@@ -53,6 +53,11 @@ app.use(express.urlencoded({ extended: true }));
 // API Routes - /api/v1/...
 app.use(`/api/${API_VERSION}`, routes);
 
+// Root route
+app.get("/", (req: Request, res: Response) => {
+  res.status(200).send("tarif-academy running on port 5000");
+});
+
 // Health check route
 app.get("/health", (req: Request, res: Response) => {
   res.status(200).json({
