@@ -33,7 +33,8 @@ const courseSchema: Schema<ICourse> = new Schema(
     instructor: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: [true, "Please add an instructor"],
+      // required: [true, "Please add an instructor"],
+      optional: true,
     },
     category: {
       type: String,

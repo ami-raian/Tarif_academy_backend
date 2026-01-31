@@ -7,7 +7,7 @@ export interface ICourse extends Document {
   price: number;
   discountPrice?: number;
   thumbnail?: string;
-  instructor: Types.ObjectId;
+  instructor?: Types.ObjectId;
   category: string;
   level: "beginner" | "intermediate" | "advanced";
   language: string;
