@@ -1,6 +1,7 @@
 import Enrollment from "./enrollment.model";
 import Course from "../course/course.model";
 import Student from "../student/student.model";
+import Video from "../video/video.model";
 import { ICreateEnrollmentInput } from "./enrollment.interface";
 
 class EnrollmentService {
@@ -51,10 +52,18 @@ class EnrollmentService {
    */
   async getStudentEnrollments(studentId: string) {
     const enrollments = await Enrollment.find({ studentId, isActive: true })
-      .populate("courseId", "title description thumbnail instructor category price")
+      .populate("courseId", "title description thumbnail instructor category price totalLessons")
       .sort({ enrolledAt: -1 });
 
-    return enrollments;
+    // Transform to match frontend expected format (courseId -> course)
+    return enrollments.map((enrollment) => {
+      const enrollmentObj = enrollment.toObject();
+      return {
+        ...enrollmentObj,
+        course: enrollmentObj.courseId,
+        student: enrollmentObj.studentId,
+      };
+    });
   }
 
   /**
@@ -186,20 +195,26 @@ class EnrollmentService {
    * Get course progress for a student
    */
   async getCourseProgress(studentId: string, courseId: string) {
-    const enrollment = await Enrollment.findOne({
-      studentId,
-      courseId,
-      isActive: true,
-    }).populate("completedVideos");
+    const [enrollment, totalVideos] = await Promise.all([
+      Enrollment.findOne({
+        studentId,
+        courseId,
+        isActive: true,
+      }),
+      Video.countDocuments({ courseId }),
+    ]);
 
     if (!enrollment) {
       throw new Error("Not enrolled in this course");
     }
 
+    const completedVideoIds = enrollment.completedVideos.map((id) => id.toString());
+
     return {
+      totalVideos,
+      completedVideos: completedVideoIds.length,
       progress: enrollment.progress,
-      completedVideos: enrollment.completedVideos,
-      lastAccessedAt: enrollment.lastAccessedAt,
+      completedVideoIds,
     };
   }
 
