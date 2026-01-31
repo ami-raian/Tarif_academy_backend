@@ -3,6 +3,7 @@ import {
   // Exam controllers
   getExams,
   getPublishedExams,
+  getPublishedExam,
   getExam,
   createExam,
   updateExam,
@@ -41,6 +42,10 @@ router
 
 // Published exams for students
 router.get("/exams/published", protectStudent, getPublishedExams);
+
+
+// Student: Get single published exam
+router.get("/exams/published/:id", protectStudent, getPublishedExam);
 
 // Student's exam history
 router.get("/my-exams", protectStudent, getMyExams);

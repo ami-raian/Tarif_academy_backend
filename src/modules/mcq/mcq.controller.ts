@@ -104,6 +104,46 @@ export const getExam = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+// @desc    Get single published exam by ID (Student)
+// @route   GET /api/v1/mcq/exams/published/:id
+export const getPublishedExam = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const exam = await mcqService.getExamById(req.params.id as string);
+
+    if (!exam) {
+      res.status(404).json({
+        success: false,
+        statusCode: 404,
+        message: "Exam not found",
+      });
+      return;
+    }
+
+    // Check if exam is published
+    if (!exam.isPublished) {
+      res.status(403).json({
+        success: false,
+        statusCode: 403,
+        message: "This exam is not published yet",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      statusCode: 200,
+      message: "Exam fetched successfully",
+      data: exam,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      statusCode: 500,
+      message: error instanceof Error ? error.message : "Error fetching exam",
+    });
+  }
+};
+
 // @desc    Create new exam
 // @route   POST /api/v1/mcq/exams
 export const createExam = async (
