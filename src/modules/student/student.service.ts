@@ -44,13 +44,20 @@ class StudentService {
     if (typeof isVerified === "boolean") query.isVerified = isVerified;
 
     if (search) {
-      query.$or = [
+      const searchConditions: Record<string, unknown>[] = [
         { fullName: { $regex: search, $options: "i" } },
         { email: { $regex: search, $options: "i" } },
         { mobile: { $regex: search, $options: "i" } },
         { "educationalInfo.ssc.roll": { $regex: search, $options: "i" } },
         { "educationalInfo.ssc.schoolName": { $regex: search, $options: "i" } },
       ];
+
+      const searchAsNumber = Number(search);
+      if (!isNaN(searchAsNumber)) {
+        searchConditions.push({ roll: searchAsNumber });
+      }
+
+      query.$or = searchConditions;
     }
 
     const skip = (page - 1) * limit;
@@ -97,6 +104,20 @@ class StudentService {
       "educationalInfo.ssc.roll": sscRoll,
       "educationalInfo.ssc.board": board,
     });
+  }
+
+  // Generate next unique roll number
+  async generateNextRoll(): Promise<number> {
+    const lastStudent = await Student.findOne().sort({ roll: -1 }).select("roll");
+    return lastStudent?.roll ? lastStudent.roll + 1 : 1001;
+  }
+
+  // Check if roll exists (excluding a specific student for updates)
+  async rollExists(roll: number, excludeId?: string): Promise<boolean> {
+    const query: Record<string, unknown> = { roll };
+    if (excludeId) query._id = { $ne: excludeId };
+    const student = await Student.findOne(query);
+    return !!student;
   }
 
   // Create new student

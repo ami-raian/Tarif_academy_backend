@@ -186,6 +186,12 @@ const educationalInfoSchema = new Schema(
 // Main Student Schema
 const studentSchema: Schema<IStudent> = new Schema(
   {
+    // Unique Identifier
+    roll: {
+      type: Number,
+      unique: true,
+    },
+
     // Personal Info
     fullName: {
       type: String,
