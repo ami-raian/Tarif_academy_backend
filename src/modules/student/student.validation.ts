@@ -230,6 +230,12 @@ export const registerStudentSchema = Joi.object({
 
 // Update Student Schema (all optional)
 export const updateStudentSchema = Joi.object({
+  roll: Joi.number().integer().positive().messages({
+    "number.base": "Roll must be a number",
+    "number.integer": "Roll must be an integer",
+    "number.positive": "Roll must be a positive number",
+  }),
+
   fullName: Joi.string().trim().min(3).max(100).messages({
     "string.min": "Name must be at least 3 characters",
     "string.max": "Name cannot exceed 100 characters",

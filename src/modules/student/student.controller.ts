@@ -101,7 +101,10 @@ export const registerStudent = async (
       return;
     }
 
-    const student = await studentService.createStudent(req.body);
+    // Auto-generate unique roll number
+    const roll = await studentService.generateNextRoll();
+
+    const student = await studentService.createStudent({ ...req.body, roll });
 
     createdResponse(res, student, "Student registered successfully");
   } catch (error) {
@@ -120,6 +123,18 @@ export const updateStudent = async (
   res: Response
 ): Promise<void> => {
   try {
+    // Check if roll is being updated and if it's already taken
+    if (req.body.roll !== undefined) {
+      const rollTaken = await studentService.rollExists(
+        req.body.roll,
+        req.params.id as string
+      );
+      if (rollTaken) {
+        errorResponse(res, "This roll number is already assigned to another student", 400);
+        return;
+      }
+    }
+
     const student = await studentService.updateStudent(
       req.params.id as string,
       req.body
