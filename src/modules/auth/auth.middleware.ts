@@ -25,7 +25,7 @@ declare global {
 export const protect = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): void => {
   const authHeader = req.headers.authorization;
 
@@ -58,7 +58,7 @@ export const protect = (
 export const adminOnly = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): void => {
   if (!req.user || req.user.type !== "admin") {
     res.status(403).json({
@@ -75,7 +75,7 @@ export const adminOnly = (
 export const studentOnly = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): void => {
   if (!req.user || req.user.type !== "student") {
     res.status(403).json({

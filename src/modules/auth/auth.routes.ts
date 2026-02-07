@@ -26,7 +26,7 @@ router.post(
   "/admin/register",
   protect,
   authorize("super_admin"),
-  adminRegister
+  adminRegister,
 );
 
 // GET /api/v1/auth/admin/me (Protected - admin only)

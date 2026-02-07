@@ -87,27 +87,30 @@ const sscSchema = Joi.object({
 
 // HSC Schema (Optional)
 const hscSchema = Joi.object({
-  roll: Joi.string().trim().allow(""),
-  registration: Joi.string().trim().allow(""),
-  collegeName: Joi.string().trim().allow(""),
+  roll: Joi.string().trim().allow("", null),
+  registration: Joi.string().trim().allow("", null),
+  collegeName: Joi.string().trim().allow("", null),
   board: Joi.string()
     .valid(...boardValues)
+    .allow("", null)
     .messages({
       "any.only": "Invalid board name",
     }),
   passingYear: Joi.number()
     .min(2000)
     .max(new Date().getFullYear() + 2)
+    .allow(null)
     .messages({
       "number.min": "Passing year must be after 2000",
       "number.max": "Invalid passing year",
     }),
   group: Joi.string()
     .valid(...groupValues)
+    .allow("", null)
     .messages({
       "any.only": "Invalid group",
     }),
-  gpa: Joi.number().min(1).max(5).messages({
+  gpa: Joi.number().min(1).max(5).allow(null, 0, "").messages({
     "number.min": "GPA cannot be less than 1",
     "number.max": "GPA cannot be more than 5",
   }),
@@ -218,15 +221,11 @@ export const registerStudentSchema = Joi.object({
     "any.required": "Educational information is required",
   }),
 
-  // Guardian
-  guardian: guardianSchema.required().messages({
-    "any.required": "Guardian information is required",
-  }),
+  // Guardian (Optional)
+  guardian: guardianSchema,
 
-  // Address
-  address: addressSchema.required().messages({
-    "any.required": "Address is required",
-  }),
+  // Address (Optional)
+  address: addressSchema,
 });
 
 // Update Student Schema (all optional)

@@ -11,7 +11,7 @@ import { successResponse, errorResponse, createdResponse } from "../../shared";
 // @route   POST /api/v1/auth/admin/login
 export const adminLogin = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { email, password } = req.body;
@@ -65,7 +65,7 @@ export const adminLogin = async (
         },
         ...tokens,
       },
-      "Admin logged in successfully"
+      "Admin logged in successfully",
     );
   } catch (error) {
     errorResponse(res, "Server Error", 500);
@@ -76,7 +76,7 @@ export const adminLogin = async (
 // @route   POST /api/v1/auth/admin/register
 export const adminRegister = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { name, email, password, role, phone } = req.body;
@@ -105,13 +105,13 @@ export const adminRegister = async (
         email: admin.email,
         role: admin.role,
       },
-      "Admin created successfully"
+      "Admin created successfully",
     );
   } catch (error) {
     errorResponse(
       res,
       error instanceof Error ? error.message : "Error creating admin",
-      400
+      400,
     );
   }
 };
@@ -120,7 +120,7 @@ export const adminRegister = async (
 // @route   GET /api/v1/auth/admin/me
 export const getAdminProfile = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const admin = await adminService.getAdminById(req.user!.id);
@@ -142,7 +142,7 @@ export const getAdminProfile = async (
 // @route   POST /api/v1/auth/student/login
 export const studentLogin = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { email, password } = req.body;
@@ -194,7 +194,7 @@ export const studentLogin = async (
         },
         ...tokens,
       },
-      "Student logged in successfully"
+      "Student logged in successfully",
     );
   } catch (error) {
     errorResponse(res, "Server Error", 500);
@@ -205,7 +205,7 @@ export const studentLogin = async (
 // @route   GET /api/v1/auth/student/me
 export const getStudentProfile = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const student = await studentService.getStudentById(req.user!.id);
@@ -227,7 +227,7 @@ export const getStudentProfile = async (
 // @route   POST /api/v1/auth/refresh-token
 export const refreshToken = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { refreshToken } = req.body;
@@ -264,7 +264,7 @@ export const refreshToken = async (
 // @route   POST /api/v1/auth/change-password
 export const changePassword = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -299,7 +299,7 @@ export const changePassword = async (
       await adminService.updateAdmin(id, { password: hashedPassword } as any);
     } else {
       const student = await studentService.getStudentByEmailWithPassword(
-        req.user!.email
+        req.user!.email,
       );
       if (!student) {
         errorResponse(res, "User not found", 404);

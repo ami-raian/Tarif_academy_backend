@@ -104,10 +104,10 @@ export interface IStudent extends Document {
   educationalInfo: IEducationalInfo;
 
   // Guardian Info
-  guardian: IGuardian;
+  guardian?: IGuardian;
 
   // Address
-  address: IAddress;
+  address?: IAddress;
 
   // Account Status
   isVerified: boolean;
@@ -132,8 +132,8 @@ export interface ICreateStudentInput {
   photo?: string;
   nidOrBirthCert?: string;
   educationalInfo: IEducationalInfo;
-  guardian: IGuardian;
-  address: IAddress;
+  guardian?: IGuardian;
+  address?: IAddress;
 }
 
 // Update Student Input
