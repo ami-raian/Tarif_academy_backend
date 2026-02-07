@@ -30,7 +30,7 @@ export const verifyToken = (token: string): IJwtPayload | null => {
 
 // Generate both tokens
 export const generateTokens = (
-  payload: IJwtPayload
+  payload: IJwtPayload,
 ): { accessToken: string; refreshToken: string } => {
   return {
     accessToken: generateAccessToken(payload),

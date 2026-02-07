@@ -32,7 +32,7 @@ const guardianSchema = new Schema(
       trim: true,
     },
   },
-  { _id: false }
+  { _id: false },
 );
 
 // Address Sub-Schema
@@ -53,7 +53,7 @@ const addressSchema = new Schema(
       trim: true,
     },
   },
-  { _id: false }
+  { _id: false },
 );
 
 // Board enum values
@@ -115,7 +115,7 @@ const sscInfoSchema = new Schema(
       max: [5, "GPA cannot be more than 5"],
     },
   },
-  { _id: false }
+  { _id: false },
 );
 
 // HSC Info Sub-Schema (Optional)
@@ -139,20 +139,34 @@ const hscInfoSchema = new Schema(
     },
     passingYear: {
       type: Number,
-      min: [2000, "Passing year must be after 2000"],
-      max: [new Date().getFullYear() + 2, "Invalid passing year"],
+      validate: {
+        validator: function (value: number) {
+          if (!value && value !== 0) return true; // Allow null/undefined
+          return value >= 2000 && value <= new Date().getFullYear() + 2;
+        },
+        message: "Passing year must be between 2000 and current year + 2",
+      },
     },
     group: {
       type: String,
-      enum: groupEnumValues,
+      enum: {
+        values: groupEnumValues,
+        message: "Invalid group",
+      },
     },
     gpa: {
       type: Number,
-      min: [1, "GPA cannot be less than 1"],
-      max: [5, "GPA cannot be more than 5"],
+      validate: {
+        validator: function (value: number) {
+          // Allow null, undefined, or 0 (empty/not provided)
+          if (value === null || value === undefined || value === 0) return true;
+          return value >= 1 && value <= 5;
+        },
+        message: "GPA must be between 1 and 5",
+      },
     },
   },
-  { _id: false }
+  { _id: false },
 );
 
 // Educational Info Sub-Schema
@@ -166,7 +180,7 @@ const educationalInfoSchema = new Schema(
       type: hscInfoSchema,
     },
   },
-  { _id: false }
+  { _id: false },
 );
 
 // Main Student Schema
@@ -235,16 +249,14 @@ const studentSchema: Schema<IStudent> = new Schema(
       required: [true, "Educational information is required"],
     },
 
-    // Guardian Info
+    // Guardian Info (Optional)
     guardian: {
       type: guardianSchema,
-      required: [true, "Guardian information is required"],
     },
 
-    // Address
+    // Address (Optional)
     address: {
       type: addressSchema,
-      required: [true, "Address is required"],
     },
 
     // Account Status
@@ -264,7 +276,7 @@ const studentSchema: Schema<IStudent> = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Hash password before saving
