@@ -42,44 +42,32 @@ const genderValues = ["male", "female", "other"];
 
 // ============ SUB SCHEMAS ============
 
-// SSC Schema (Required)
+// SSC Schema (Optional)
 const sscSchema = Joi.object({
-  roll: Joi.string().trim().required().messages({
-    "string.empty": "SSC Roll is required",
-    "any.required": "SSC Roll is required",
-  }),
-  registration: Joi.string().trim().required().messages({
-    "string.empty": "SSC Registration is required",
-    "any.required": "SSC Registration is required",
-  }),
-  schoolName: Joi.string().trim().required().messages({
-    "string.empty": "School name is required",
-    "any.required": "School name is required",
-  }),
+  roll: Joi.string().trim().allow("", null),
+  registration: Joi.string().trim().allow("", null),
+  schoolName: Joi.string().trim().allow("", null),
   board: Joi.string()
     .valid(...boardValues)
-    .required()
+    .allow("", null)
     .messages({
       "any.only": "Invalid board name",
-      "any.required": "SSC Board is required",
     }),
   passingYear: Joi.number()
     .min(2000)
-    .max(new Date().getFullYear())
-    .required()
+    .max(new Date().getFullYear() + 1)
+    .allow(null)
     .messages({
       "number.min": "Passing year must be after 2000",
       "number.max": "Passing year cannot be in future",
-      "any.required": "SSC Passing year is required",
     }),
   group: Joi.string()
     .valid(...groupValues)
-    .required()
+    .allow("", null)
     .messages({
       "any.only": "Invalid group. Must be science, commerce, or arts",
-      "any.required": "SSC Group is required",
     }),
-  gpa: Joi.number().min(1).max(5).messages({
+  gpa: Joi.number().min(1).max(5).allow(null, 0, "").messages({
     "number.min": "GPA cannot be less than 1",
     "number.max": "GPA cannot be more than 5",
   }),
@@ -118,9 +106,7 @@ const hscSchema = Joi.object({
 
 // Educational Info Schema
 const educationalInfoSchema = Joi.object({
-  ssc: sscSchema.required().messages({
-    "any.required": "SSC information is required",
-  }),
+  ssc: sscSchema,
   hsc: hscSchema,
 });
 
@@ -216,10 +202,8 @@ export const registerStudentSchema = Joi.object({
 
   nidOrBirthCert: Joi.string().trim().allow(""),
 
-  // Educational Info
-  educationalInfo: educationalInfoSchema.required().messages({
-    "any.required": "Educational information is required",
-  }),
+  // Educational Info (Optional)
+  educationalInfo: educationalInfoSchema,
 
   // Guardian (Optional)
   guardian: guardianSchema,

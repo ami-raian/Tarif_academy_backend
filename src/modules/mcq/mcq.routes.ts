@@ -27,6 +27,7 @@ import {
   getMyExams,
   getExamResult,
   getLeaderboard,
+  verifyExamCode,
 } from "./mcq.controller";
 import { protectAdmin, protectStudent, authorize } from "../auth/auth.middleware";
 
@@ -107,6 +108,9 @@ router
   .delete(protectAdmin, authorize("super_admin", "admin"), deleteQuestion);
 
 // ==================== SUBMISSION ROUTES ====================
+
+// Verify access code before starting
+router.post("/exams/:examId/verify-code", protectStudent, verifyExamCode);
 
 // Start exam
 router.post("/exams/:examId/start", protectStudent, startExam);

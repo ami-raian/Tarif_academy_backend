@@ -53,11 +53,18 @@ export const getPublishedExams = async (
       search: search as string,
     });
 
+    // Strip accessCode, expose hasAccessCode boolean
+    const exams = result.exams.map((exam) => {
+      const plain = (exam as unknown as { toObject?: () => Record<string, unknown> }).toObject?.() ?? { ...exam } as Record<string, unknown>;
+      const { accessCode, ...rest } = plain;
+      return { ...rest, hasAccessCode: Boolean(accessCode) };
+    });
+
     res.status(200).json({
       success: true,
       statusCode: 200,
       message: "Published exams fetched successfully",
-      data: result.exams,
+      data: exams,
       pagination: {
         totalItems: result.total,
         totalPages: result.totalPages,
@@ -129,11 +136,15 @@ export const getPublishedExam = async (req: Request, res: Response): Promise<voi
       return;
     }
 
+    // Strip accessCode, expose hasAccessCode boolean
+    const examObj = exam.toObject ? exam.toObject() : { ...exam };
+    const { accessCode, ...examData } = examObj as Record<string, unknown>;
+
     res.status(200).json({
       success: true,
       statusCode: 200,
       message: "Exam fetched successfully",
-      data: exam,
+      data: { ...examData, hasAccessCode: Boolean(accessCode) },
     });
   } catch (error) {
     res.status(500).json({
@@ -545,6 +556,19 @@ export const startExam = async (
       return;
     }
 
+    // Check access code if exam is code-protected
+    if (exam.accessCode) {
+      const { accessCode } = req.body;
+      if (!accessCode || accessCode !== exam.accessCode) {
+        res.status(403).json({
+          success: false,
+          statusCode: 403,
+          message: "Invalid access code",
+        });
+        return;
+      }
+    }
+
     // Check if already submitted
     const hasSubmitted = await mcqService.hasSubmitted(examId, studentId);
     if (hasSubmitted) {
@@ -778,6 +802,52 @@ export const getExamResult = async (
       success: false,
       statusCode: 500,
       message: error instanceof Error ? error.message : "Error fetching result",
+    });
+  }
+};
+
+// @desc    Verify exam access code (Student)
+// @route   POST /api/v1/mcq/exams/:examId/verify-code
+export const verifyExamCode = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const examId = req.params.examId as string;
+    const { accessCode } = req.body;
+
+    const exam = await mcqService.getExamById(examId);
+
+    if (!exam || !exam.isPublished) {
+      res.status(404).json({
+        success: false,
+        statusCode: 404,
+        message: "Exam not found",
+      });
+      return;
+    }
+
+    if (!exam.accessCode) {
+      // Exam has no code — always valid
+      res.status(200).json({ success: true, statusCode: 200, message: "Access granted" });
+      return;
+    }
+
+    if (!accessCode || accessCode !== exam.accessCode) {
+      res.status(403).json({
+        success: false,
+        statusCode: 403,
+        message: "Invalid access code",
+      });
+      return;
+    }
+
+    res.status(200).json({ success: true, statusCode: 200, message: "Access granted" });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      statusCode: 500,
+      message: error instanceof Error ? error.message : "Error verifying code",
     });
   }
 };

@@ -91,14 +91,16 @@ export const registerStudent = async (
       return;
     }
 
-    // Check if SSC Roll already exists for the same board
-    const sscRollExists = await studentService.getStudentBySSCRoll(
-      educationalInfo.ssc.roll,
-      educationalInfo.ssc.board
-    );
-    if (sscRollExists) {
-      errorResponse(res, "SSC Roll already registered for this board", 400);
-      return;
+    // Check if SSC Roll already exists for the same board (only if provided)
+    if (educationalInfo?.ssc?.roll && educationalInfo?.ssc?.board) {
+      const sscRollExists = await studentService.getStudentBySSCRoll(
+        educationalInfo.ssc.roll,
+        educationalInfo.ssc.board
+      );
+      if (sscRollExists) {
+        errorResponse(res, "SSC Roll already registered for this board", 400);
+        return;
+      }
     }
 
     // Auto-generate unique roll number
