@@ -27,6 +27,7 @@ export interface IMcqExam extends Document {
   passingMarks: number;
   isPublished: boolean;
   isResultPublished: boolean;
+  accessCode?: string; // optional: if set, students must enter this code to start
   startTime?: Date;
   endTime?: Date;
   createdBy: Types.ObjectId;
@@ -68,6 +69,7 @@ export interface ICreateExamInput {
   description?: string;
   duration: number;
   passingMarks: number;
+  accessCode?: string;
   startTime?: Date;
   endTime?: Date;
 }
@@ -85,6 +87,7 @@ export interface IUpdateExamInput {
   description?: string;
   duration?: number;
   passingMarks?: number;
+  accessCode?: string;
   startTime?: Date;
   endTime?: Date;
   isPublished?: boolean;

@@ -82,6 +82,11 @@ const mcqExamSchema: Schema<IMcqExam> = new Schema(
       type: Boolean,
       default: false,
     },
+    accessCode: {
+      type: String,
+      trim: true,
+      select: true, // kept in DB; we manually strip it from student responses
+    },
     startTime: {
       type: Date,
     },
