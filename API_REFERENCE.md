@@ -3,6 +3,7 @@
 ## 🔐 Authentication
 
 সব protected routes এ JWT token দরকার:
+
 ```
 Authorization: Bearer <your_jwt_token>
 ```
@@ -18,12 +19,14 @@ Video entry তৈরি করুন Bunny.net এ upload করার জন�
 **Endpoint:** `POST /api/v1/videos`
 
 **Headers:**
+
 ```
 Authorization: Bearer <admin_token>
 Content-Type: application/json
 ```
 
 **Request Body:**
+
 ```json
 {
   "title": "Introduction to JavaScript",
@@ -36,6 +39,7 @@ Content-Type: application/json
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "success": true,
@@ -57,6 +61,7 @@ Content-Type: application/json
 ```
 
 **Upload করার পদ্ধতি:**
+
 ```bash
 # PowerShell দিয়ে
 curl -X PUT "https://video.bunnycdn.com/library/YOUR_LIBRARY_ID/videos/BUNNY_GUID" \
@@ -74,11 +79,13 @@ curl -X PUT "https://video.bunnycdn.com/library/YOUR_LIBRARY_ID/videos/BUNNY_GUI
 **Endpoint:** `GET /api/v1/videos/course/:courseId`
 
 **Headers:**
+
 ```
 Authorization: Bearer <student_or_admin_token>
 ```
 
 **Response (200 OK) - For Enrolled Student:**
+
 ```json
 {
   "success": true,
@@ -116,6 +123,7 @@ Authorization: Bearer <student_or_admin_token>
 ```
 
 **Response (200 OK) - For Non-Enrolled Student:**
+
 ```json
 {
   "success": true,
@@ -154,11 +162,13 @@ Video streaming URL নিন (requires enrollment অথবা free video)।
 **Endpoint:** `GET /api/v1/videos/:videoId/stream`
 
 **Headers:**
+
 ```
 Authorization: Bearer <student_token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -177,6 +187,7 @@ Authorization: Bearer <student_token>
 ```
 
 **Error (403 Forbidden):**
+
 ```json
 {
   "success": false,
@@ -194,11 +205,13 @@ Video সম্পূর্ণ দেখা শেষ হলে mark করু�
 **Endpoint:** `POST /api/v1/videos/:videoId/complete`
 
 **Headers:**
+
 ```
 Authorization: Bearer <student_token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -219,12 +232,14 @@ Video এর details update করুন।
 **Endpoint:** `PATCH /api/v1/videos/:videoId`
 
 **Headers:**
+
 ```
 Authorization: Bearer <admin_token>
 Content-Type: application/json
 ```
 
 **Request Body:**
+
 ```json
 {
   "title": "Updated Title",
@@ -235,6 +250,7 @@ Content-Type: application/json
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -259,11 +275,13 @@ Video delete করুন (Bunny.net থেকেও delete হবে)।
 **Endpoint:** `DELETE /api/v1/videos/:videoId`
 
 **Headers:**
+
 ```
 Authorization: Bearer <admin_token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -283,11 +301,13 @@ Video এর encoding status check করুন।
 **Endpoint:** `GET /api/v1/videos/:videoId/status`
 
 **Headers:**
+
 ```
 Authorization: Bearer <admin_token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -309,6 +329,7 @@ Authorization: Bearer <admin_token>
 ```
 
 **Encoding Status Codes:**
+
 - `0` = Queued
 - `1` = Processing
 - `2` = Encoding
@@ -327,12 +348,14 @@ Course এ enroll করুন।
 **Endpoint:** `POST /api/v1/enrollments`
 
 **Headers:**
+
 ```
 Authorization: Bearer <student_token>
 Content-Type: application/json
 ```
 
 **Request Body:**
+
 ```json
 {
   "courseId": "677ef123456789abcdef0123",
@@ -342,6 +365,7 @@ Content-Type: application/json
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "success": true,
@@ -368,11 +392,13 @@ Content-Type: application/json
 **Endpoint:** `GET /api/v1/enrollments/my-courses`
 
 **Headers:**
+
 ```
 Authorization: Bearer <student_token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -403,11 +429,13 @@ Authorization: Bearer <student_token>
 **Endpoint:** `GET /api/v1/enrollments/check/:courseId`
 
 **Headers:**
+
 ```
 Authorization: Bearer <student_token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -432,21 +460,20 @@ Authorization: Bearer <student_token>
 **Endpoint:** `GET /api/v1/enrollments/progress/:courseId`
 
 **Headers:**
+
 ```
 Authorization: Bearer <student_token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
   "statusCode": 200,
   "data": {
     "progress": 35,
-    "completedVideos": [
-      "677ef987654321fedcba9876",
-      "677ef987654321fedcba9877"
-    ],
+    "completedVideos": ["677ef987654321fedcba9876", "677ef987654321fedcba9877"],
     "lastAccessedAt": "2024-01-15T14:30:00.000Z"
   }
 }
@@ -461,11 +488,13 @@ Enrollment cancel করুন।
 **Endpoint:** `DELETE /api/v1/enrollments/:enrollmentId`
 
 **Headers:**
+
 ```
 Authorization: Bearer <admin_token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -485,6 +514,7 @@ Authorization: Bearer <admin_token>
 ### Admin Workflow (Upload Video)
 
 1. **Create video entry:**
+
 ```bash
 POST /api/v1/videos
 Body: { title, courseId, sectionTitle, order }
@@ -492,6 +522,7 @@ Response: { bunnyGuid, uploadUrl }
 ```
 
 2. **Upload video file to Bunny.net:**
+
 ```bash
 PUT https://video.bunnycdn.com/library/{libraryId}/videos/{bunnyGuid}
 Header: AccessKey: {apiKey}
@@ -499,6 +530,7 @@ Body: video file (binary)
 ```
 
 3. **Check encoding status:**
+
 ```bash
 GET /api/v1/videos/:videoId/status
 Response: { status: "ready" }
@@ -509,29 +541,34 @@ Response: { status: "ready" }
 ### Student Workflow (Watch Video)
 
 1. **Enroll in course:**
+
 ```bash
 POST /api/v1/enrollments
 Body: { courseId, paymentAmount, transactionId }
 ```
 
 2. **Get course videos:**
+
 ```bash
 GET /api/v1/videos/course/:courseId
 Response: { sections: {...}, isEnrolled: true }
 ```
 
 3. **Get video stream URL:**
+
 ```bash
 GET /api/v1/videos/:videoId/stream
 Response: { streamUrl, embedUrl }
 ```
 
 4. **Play video in frontend:**
+
 ```html
 <iframe src="{embedUrl}" width="640" height="360"></iframe>
 ```
 
 5. **Mark as completed:**
+
 ```bash
 POST /api/v1/videos/:videoId/complete
 Response: { progress: 35 }
@@ -551,6 +588,7 @@ Response: { progress: 35 }
 ## ❌ Common Error Responses
 
 **401 Unauthorized:**
+
 ```json
 {
   "success": false,
@@ -560,6 +598,7 @@ Response: { progress: 35 }
 ```
 
 **403 Forbidden:**
+
 ```json
 {
   "success": false,
@@ -569,6 +608,7 @@ Response: { progress: 35 }
 ```
 
 **404 Not Found:**
+
 ```json
 {
   "success": false,
@@ -578,6 +618,7 @@ Response: { progress: 35 }
 ```
 
 **500 Server Error:**
+
 ```json
 {
   "success": false,
