@@ -75,39 +75,33 @@ const boardEnumValues = [
 // Group enum values
 const groupEnumValues = ["science", "commerce", "arts"];
 
-// SSC Info Sub-Schema (Required)
+// SSC Info Sub-Schema (Optional)
 const sscInfoSchema = new Schema(
   {
     roll: {
       type: String,
-      required: [true, "SSC Roll is required"],
       trim: true,
     },
     registration: {
       type: String,
-      required: [true, "SSC Registration is required"],
       trim: true,
     },
     schoolName: {
       type: String,
-      required: [true, "School name is required"],
       trim: true,
     },
     board: {
       type: String,
       enum: boardEnumValues,
-      required: [true, "SSC Board is required"],
     },
     passingYear: {
       type: Number,
-      required: [true, "SSC Passing year is required"],
       min: [2000, "Passing year must be after 2000"],
       max: [new Date().getFullYear(), "Passing year cannot be in future"],
     },
     group: {
       type: String,
       enum: groupEnumValues,
-      required: [true, "SSC Group is required"],
     },
     gpa: {
       type: Number,
@@ -174,7 +168,6 @@ const educationalInfoSchema = new Schema(
   {
     ssc: {
       type: sscInfoSchema,
-      required: [true, "SSC information is required"],
     },
     hsc: {
       type: hscInfoSchema,
@@ -249,10 +242,9 @@ const studentSchema: Schema<IStudent> = new Schema(
       trim: true,
     },
 
-    // Educational Info
+    // Educational Info (Optional)
     educationalInfo: {
       type: educationalInfoSchema,
-      required: [true, "Educational information is required"],
     },
 
     // Guardian Info (Optional)

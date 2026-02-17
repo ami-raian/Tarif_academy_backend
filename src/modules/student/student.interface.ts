@@ -58,14 +58,14 @@ export interface IAddress {
   permanent?: string;
 }
 
-// SSC Info Interface (Required)
+// SSC Info Interface (Optional)
 export interface ISSCInfo {
-  roll: string;
-  registration: string;
-  schoolName: string;
-  board: BoardName;
-  passingYear: number;
-  group: GroupType;
+  roll?: string;
+  registration?: string;
+  schoolName?: string;
+  board?: BoardName;
+  passingYear?: number;
+  group?: GroupType;
   gpa?: number;
 }
 
@@ -82,7 +82,7 @@ export interface IHSCInfo {
 
 // Educational Info Interface
 export interface IEducationalInfo {
-  ssc: ISSCInfo;
+  ssc?: ISSCInfo;
   hsc?: IHSCInfo;
 }
 
@@ -104,7 +104,7 @@ export interface IStudent extends Document {
   nidOrBirthCert?: string;
 
   // Educational Info
-  educationalInfo: IEducationalInfo;
+  educationalInfo?: IEducationalInfo;
 
   // Guardian Info
   guardian?: IGuardian;
@@ -134,7 +134,7 @@ export interface ICreateStudentInput {
   bloodGroup?: BloodGroupType;
   photo?: string;
   nidOrBirthCert?: string;
-  educationalInfo: IEducationalInfo;
+  educationalInfo?: IEducationalInfo;
   guardian?: IGuardian;
   address?: IAddress;
 }
