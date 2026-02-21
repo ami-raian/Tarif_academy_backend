@@ -5,6 +5,7 @@ import {
   getAdminProfile,
   studentLogin,
   getStudentProfile,
+  updateStudentProfile,
   refreshToken,
   changePassword,
 } from "./auth.controller";
@@ -40,6 +41,9 @@ router.post("/student/login", studentLogin);
 
 // GET /api/v1/auth/student/me (Protected - student only)
 router.get("/student/me", protectStudent, getStudentProfile);
+
+// PATCH /api/v1/auth/student/me (Protected - student only)
+router.patch("/student/me", protectStudent, updateStudentProfile);
 
 // ============ COMMON AUTH ROUTES ============
 // POST /api/v1/auth/refresh-token

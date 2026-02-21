@@ -221,6 +221,67 @@ export const getStudentProfile = async (
   }
 };
 
+// @desc    Update Student Profile (self)
+// @route   PATCH /api/v1/auth/student/me
+export const updateStudentProfile = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const studentId = req.user!.id;
+
+    // Fields that students can update themselves
+    const allowedFields = [
+      "fullName",
+      "mobile",
+      "whatsapp",
+      "bloodGroup",
+      "nidOrBirthCert",
+      "educationalInfo",
+      "guardian",
+      "address",
+      "photo",
+    ];
+
+    // Filter only allowed fields
+    const updateData: Record<string, unknown> = {};
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        updateData[field] = req.body[field];
+      }
+    }
+
+    // Check if mobile is being changed and if it's already taken
+    if (updateData.mobile) {
+      const existingStudent = await studentService.getStudentByMobile(
+        updateData.mobile as string,
+      );
+      if (existingStudent && String(existingStudent._id) !== studentId) {
+        errorResponse(res, "এই মোবাইল নম্বরটি অন্য কারো ব্যবহৃত", 400);
+        return;
+      }
+    }
+
+    const updatedStudent = await studentService.updateStudent(
+      studentId,
+      updateData,
+    );
+
+    if (!updatedStudent) {
+      errorResponse(res, "Student not found", 404);
+      return;
+    }
+
+    successResponse(res, updatedStudent, "প্রোফাইল সফলভাবে আপডেট হয়েছে");
+  } catch (error) {
+    errorResponse(
+      res,
+      error instanceof Error ? error.message : "Server Error",
+      500,
+    );
+  }
+};
+
 // ============ COMMON ============
 
 // @desc    Refresh Token
