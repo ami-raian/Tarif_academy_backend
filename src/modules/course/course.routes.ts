@@ -8,8 +8,10 @@ import {
   deleteCourse,
   togglePublish,
   getInstructorCourses,
+  uploadCourseThumbnail,
 } from "./course.controller";
 import { protect, protectAdmin, authorize } from "../auth/auth.middleware";
+import { handleThumbnailUpload } from "../../middlewares/upload.middleware";
 
 const router: Router = Router();
 
@@ -33,7 +35,14 @@ router.patch(
   "/:id/publish",
   protectAdmin,
   authorize("super_admin", "admin"),
-  togglePublish
+  togglePublish,
 );
-
+// Upload course thumbnail
+router.post(
+  "/:id/thumbnail",
+  protectAdmin,
+  authorize("super_admin", "admin"),
+  handleThumbnailUpload,
+  uploadCourseThumbnail,
+);
 export default router;

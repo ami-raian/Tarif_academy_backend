@@ -309,3 +309,61 @@ export const getInstructorCourses = async (
     });
   }
 };
+
+// @desc    Upload course thumbnail
+// @route   POST /api/courses/:id/thumbnail
+export const uploadCourseThumbnail = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const courseId = req.params.id as string;
+
+    // Check if file was uploaded
+    if (!req.file) {
+      res.status(400).json({
+        success: false,
+        statusCode: 400,
+        message: "কোন ছবি আপলোড করা হয়নি",
+      });
+      return;
+    }
+
+    // Get the file path - just the relative path
+    const thumbnailPath = `/uploads/thumbnails/${req.file.filename}`;
+
+    // Update course with new thumbnail
+    const course = await courseService.updateCourse(courseId, {
+      thumbnail: thumbnailPath,
+    });
+
+    if (!course) {
+      res.status(404).json({
+        success: false,
+        statusCode: 404,
+        message: "কোর্স পাওয়া যায়নি",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      statusCode: 200,
+      message: "থাম্বনেইল সফলভাবে আপলোড হয়েছে",
+      data: {
+        thumbnail: thumbnailPath,
+        course,
+      },
+    });
+  } catch (error) {
+    console.error("Error uploading thumbnail:", error);
+    res.status(500).json({
+      success: false,
+      statusCode: 500,
+      message:
+        error instanceof Error
+          ? error.message
+          : "থাম্বনেইল আপলোড করতে সমস্যা হয়েছে",
+    });
+  }
+};

@@ -1,5 +1,6 @@
 import express, { Application, Request, Response } from "express";
 import cors from "cors";
+import path from "path";
 import routes from "./routes";
 import { errorHandler } from "./shared";
 
@@ -49,6 +50,12 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static files from public folder
+app.use(
+  "/uploads",
+  express.static(path.join(process.cwd(), "public", "uploads")),
+);
 
 // API Routes - /api/v1/...
 app.use(`/api/${API_VERSION}`, routes);
