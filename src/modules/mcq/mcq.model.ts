@@ -40,7 +40,7 @@ const mcqQuestionSchema: Schema<IMcqQuestion> = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // MCQ Exam Schema
@@ -73,6 +73,11 @@ const mcqExamSchema: Schema<IMcqExam> = new Schema(
       type: Number,
       required: [true, "Passing marks is required"],
       min: [0, "Passing marks cannot be negative"],
+    },
+    negativeMarking: {
+      type: Number,
+      default: 0,
+      min: [0, "Negative marking cannot be negative"],
     },
     isPublished: {
       type: Boolean,
@@ -112,7 +117,7 @@ const mcqExamSchema: Schema<IMcqExam> = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // MCQ Submission Schema
@@ -186,7 +191,7 @@ const mcqSubmissionSchema: Schema<IMcqSubmission> = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Compound index to prevent duplicate submissions
@@ -198,9 +203,9 @@ mcqQuestionSchema.index({ examId: 1, order: 1 });
 export const McqExam = mongoose.model<IMcqExam>("McqExam", mcqExamSchema);
 export const McqQuestion = mongoose.model<IMcqQuestion>(
   "McqQuestion",
-  mcqQuestionSchema
+  mcqQuestionSchema,
 );
 export const McqSubmission = mongoose.model<IMcqSubmission>(
   "McqSubmission",
-  mcqSubmissionSchema
+  mcqSubmissionSchema,
 );

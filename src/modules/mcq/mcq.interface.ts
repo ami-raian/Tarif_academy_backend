@@ -25,6 +25,7 @@ export interface IMcqExam extends Document {
   totalQuestions: number;
   totalMarks: number;
   passingMarks: number;
+  negativeMarking: number; // marks to deduct per wrong answer (0 means no negative marking)
   isPublished: boolean;
   isResultPublished: boolean;
   accessCode?: string; // optional: if set, students must enter this code to start
@@ -69,6 +70,7 @@ export interface ICreateExamInput {
   description?: string;
   duration: number;
   passingMarks: number;
+  negativeMarking?: number;
   accessCode?: string;
   startTime?: Date;
   endTime?: Date;
@@ -87,6 +89,7 @@ export interface IUpdateExamInput {
   description?: string;
   duration?: number;
   passingMarks?: number;
+  negativeMarking?: number;
   accessCode?: string;
   startTime?: Date;
   endTime?: Date;
