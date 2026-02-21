@@ -13,6 +13,7 @@ interface QueryOptions {
   page?: number;
   limit?: number;
   isPublished?: boolean;
+  isResultPublished?: boolean;
   search?: string;
 }
 
@@ -26,12 +27,22 @@ class McqService {
     page: number;
     totalPages: number;
   }> {
-    const { page = 1, limit = 10, isPublished, search } = options;
+    const {
+      page = 1,
+      limit = 10,
+      isPublished,
+      isResultPublished,
+      search,
+    } = options;
 
     const query: Record<string, unknown> = { isDeleted: false };
 
     if (isPublished !== undefined) {
       query.isPublished = isPublished;
+    }
+
+    if (isResultPublished !== undefined) {
+      query.isResultPublished = isResultPublished;
     }
 
     if (search) {
@@ -106,14 +117,14 @@ class McqService {
   async getExamById(id: string): Promise<IMcqExam | null> {
     return await McqExam.findOne({ _id: id, isDeleted: false }).populate(
       "createdBy",
-      "name email"
+      "name email",
     );
   }
 
   // Create new exam
   async createExam(
     examData: ICreateExamInput,
-    createdBy: string
+    createdBy: string,
   ): Promise<IMcqExam> {
     return await McqExam.create({ ...examData, createdBy });
   }
@@ -121,12 +132,12 @@ class McqService {
   // Update exam
   async updateExam(
     id: string,
-    examData: IUpdateExamInput
+    examData: IUpdateExamInput,
   ): Promise<IMcqExam | null> {
     return await McqExam.findOneAndUpdate(
       { _id: id, isDeleted: false },
       examData,
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
   }
 
@@ -138,7 +149,7 @@ class McqService {
     return await McqExam.findOneAndUpdate(
       { _id: id, isDeleted: false },
       { isDeleted: true, deletedAt: new Date(), deletedBy },
-      { new: true }
+      { new: true },
     );
   }
 
@@ -157,7 +168,7 @@ class McqService {
     return await McqExam.findOneAndUpdate(
       { _id: id, isDeleted: false },
       { isResultPublished: true },
-      { new: true }
+      { new: true },
     );
   }
 
@@ -166,7 +177,7 @@ class McqService {
     return await McqExam.findOneAndUpdate(
       { _id: id, isDeleted: false },
       { isResultPublished: false },
-      { new: true }
+      { new: true },
     );
   }
 
@@ -194,13 +205,18 @@ class McqService {
   }
 
   // Create question
-  async createQuestion(questionData: ICreateQuestionInput): Promise<IMcqQuestion> {
+  async createQuestion(
+    questionData: ICreateQuestionInput,
+  ): Promise<IMcqQuestion> {
     // Get the current max order for this exam
-    const lastQuestion = await McqQuestion.findOne({ examId: questionData.examId })
+    const lastQuestion = await McqQuestion.findOne({
+      examId: questionData.examId,
+    })
       .sort({ order: -1 })
       .lean();
 
-    const order = questionData.order ?? (lastQuestion ? lastQuestion.order + 1 : 0);
+    const order =
+      questionData.order ?? (lastQuestion ? lastQuestion.order + 1 : 0);
 
     const question = await McqQuestion.create({ ...questionData, order });
 
@@ -213,7 +229,7 @@ class McqService {
   // Update question
   async updateQuestion(
     id: string,
-    questionData: Partial<ICreateQuestionInput>
+    questionData: Partial<ICreateQuestionInput>,
   ): Promise<IMcqQuestion | null> {
     const question = await McqQuestion.findByIdAndUpdate(id, questionData, {
       new: true,
@@ -241,7 +257,7 @@ class McqService {
   // Bulk create questions
   async bulkCreateQuestions(
     examId: string,
-    questions: Omit<ICreateQuestionInput, "examId">[]
+    questions: Omit<ICreateQuestionInput, "examId">[],
   ) {
     const questionsWithExamId = questions.map((q, index) => ({
       ...q,
@@ -303,7 +319,7 @@ class McqService {
   // Get submission by exam and student
   async getSubmission(
     examId: string,
-    studentId: string
+    studentId: string,
   ): Promise<IMcqSubmission | null> {
     return await McqSubmission.findOne({ examId, studentId })
       .populate("examId")
@@ -314,7 +330,7 @@ class McqService {
   async saveAnswer(
     examId: string,
     studentId: string,
-    answerData: ISubmitAnswerInput
+    answerData: ISubmitAnswerInput,
   ): Promise<IMcqSubmission | null> {
     const submission = await McqSubmission.findOne({
       examId,
@@ -328,7 +344,7 @@ class McqService {
 
     // Find and update the specific answer
     const answerIndex = submission.answers.findIndex(
-      (a) => a.questionId.toString() === answerData.questionId
+      (a) => a.questionId.toString() === answerData.questionId,
     );
 
     if (answerIndex !== -1) {
@@ -344,7 +360,7 @@ class McqService {
   async submitExam(
     examId: string,
     studentId: string,
-    isAutoSubmit: boolean = false
+    isAutoSubmit: boolean = false,
   ): Promise<IMcqSubmission | null> {
     const submission = await McqSubmission.findOne({
       examId,
@@ -369,7 +385,7 @@ class McqService {
 
     for (const answer of submission.answers) {
       const question = questions.find(
-        (q) => q._id.toString() === answer.questionId.toString()
+        (q) => q._id.toString() === answer.questionId.toString(),
       );
 
       if (question && answer.selectedOptionIndex !== null) {
@@ -415,7 +431,7 @@ class McqService {
   // Get exam result for student (only if result is published)
   async getExamResult(
     examId: string,
-    studentId: string
+    studentId: string,
   ): Promise<IMcqSubmission | null> {
     const exam = await McqExam.findById(examId);
     if (!exam || !exam.isResultPublished) {
@@ -430,13 +446,15 @@ class McqService {
   // Check if student has already submitted
   async hasSubmitted(examId: string, studentId: string): Promise<boolean> {
     const submission = await McqSubmission.findOne({ examId, studentId });
-    return submission?.status === "evaluated" || submission?.status === "submitted";
+    return (
+      submission?.status === "evaluated" || submission?.status === "submitted"
+    );
   }
 
   // Get exam leaderboard
   async getLeaderboard(
     examId: string,
-    limit: number = 10
+    limit: number = 10,
   ): Promise<IMcqSubmission[]> {
     return await McqSubmission.find({ examId, status: "evaluated" })
       .populate("studentId", "fullName")

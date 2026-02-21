@@ -8,11 +8,13 @@ export const getCourses = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const { page, limit, category, level, search, isPublished } = req.query;
+    const { page, limit, categoryId, category, level, search, isPublished } =
+      req.query;
 
     const result = await courseService.getAllCourses({
       page: page ? parseInt(page as string) : undefined,
       limit: limit ? parseInt(limit as string) : undefined,
+      categoryId: categoryId as string,
       category: category as string,
       level: level as string,
       search: search as string,
