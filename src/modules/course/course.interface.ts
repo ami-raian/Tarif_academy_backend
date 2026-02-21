@@ -8,6 +8,7 @@ export interface ICourse extends Document {
   discountPrice?: number;
   thumbnail?: string;
   instructor?: Types.ObjectId;
+  categoryId?: Types.ObjectId;
   category: string;
   level: "beginner" | "intermediate" | "advanced";
   language: string;
@@ -32,6 +33,7 @@ export interface ICreateCourseInput {
   discountPrice?: number;
   thumbnail?: string;
   instructor: string;
+  categoryId?: string;
   category: string;
   level?: "beginner" | "intermediate" | "advanced";
   language?: string;
@@ -44,6 +46,7 @@ export interface IUpdateCourseInput {
   price?: number;
   discountPrice?: number;
   thumbnail?: string;
+  categoryId?: string;
   category?: string;
   level?: "beginner" | "intermediate" | "advanced";
   language?: string;

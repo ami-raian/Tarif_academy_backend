@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { userRoutes } from "../modules/user";
 import { courseRoutes } from "../modules/course";
+import { courseCategoryRoutes } from "../modules/course-category";
 import { studentRoutes } from "../modules/student";
 import { authRoutes } from "../modules/auth";
 import { adminRoutes } from "../modules/admin";
@@ -21,6 +22,7 @@ router.use("/admins", adminRoutes);
 // Other module routes
 router.use("/users", userRoutes);
 router.use("/courses", courseRoutes);
+router.use("/course-categories", courseCategoryRoutes);
 router.use("/students", studentRoutes);
 router.use("/videos", videoRoutes);
 router.use("/enrollments", enrollmentRoutes);

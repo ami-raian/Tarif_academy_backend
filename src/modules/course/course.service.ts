@@ -8,6 +8,7 @@ import {
 interface QueryOptions {
   page?: number;
   limit?: number;
+  categoryId?: string;
   category?: string;
   level?: string;
   isPublished?: boolean;
@@ -26,6 +27,7 @@ class CourseService {
       const {
         page = 1,
         limit = 10,
+        categoryId,
         category,
         level,
         isPublished,
@@ -42,7 +44,10 @@ class CourseService {
       // Exclude soft-deleted courses
       query.isDeleted = false;
 
-      if (category) query.category = category;
+      // Filter by categoryId (MongoId) if provided
+      if (categoryId) query.categoryId = categoryId;
+      // Fallback: filter by category name (string) - for backward compatibility
+      if (category && !categoryId) query.category = category;
       if (level) query.level = level;
       if (search) {
         query.$or = [
