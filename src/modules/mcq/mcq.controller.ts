@@ -7,12 +7,23 @@ import mcqService from "./mcq.service";
 // @route   GET /api/v1/mcq/exams
 export const getExams = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { page, limit, isPublished, search } = req.query;
+    const { page, limit, isPublished, isResultPublished, search } = req.query;
 
     const result = await mcqService.getAllExams({
       page: page ? parseInt(page as string) : undefined,
       limit: limit ? parseInt(limit as string) : undefined,
-      isPublished: isPublished === "true" ? true : isPublished === "false" ? false : undefined,
+      isPublished:
+        isPublished === "true"
+          ? true
+          : isPublished === "false"
+            ? false
+            : undefined,
+      isResultPublished:
+        isResultPublished === "true"
+          ? true
+          : isResultPublished === "false"
+            ? false
+            : undefined,
       search: search as string,
     });
 
@@ -42,7 +53,7 @@ export const getExams = async (req: Request, res: Response): Promise<void> => {
 // @route   GET /api/v1/mcq/exams/published
 export const getPublishedExams = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { page, limit, search } = req.query;
@@ -55,7 +66,10 @@ export const getPublishedExams = async (
 
     // Strip accessCode, expose hasAccessCode boolean
     const exams = result.exams.map((exam) => {
-      const plain = (exam as unknown as { toObject?: () => Record<string, unknown> }).toObject?.() ?? { ...exam } as Record<string, unknown>;
+      const plain =
+        (
+          exam as unknown as { toObject?: () => Record<string, unknown> }
+        ).toObject?.() ?? ({ ...exam } as Record<string, unknown>);
       const { accessCode, ...rest } = plain;
       return { ...rest, hasAccessCode: Boolean(accessCode) };
     });
@@ -113,7 +127,10 @@ export const getExam = async (req: Request, res: Response): Promise<void> => {
 
 // @desc    Get single published exam by ID (Student)
 // @route   GET /api/v1/mcq/exams/published/:id
-export const getPublishedExam = async (req: Request, res: Response): Promise<void> => {
+export const getPublishedExam = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   try {
     const exam = await mcqService.getExamById(req.params.id as string);
 
@@ -159,7 +176,7 @@ export const getPublishedExam = async (req: Request, res: Response): Promise<voi
 // @route   POST /api/v1/mcq/exams
 export const createExam = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const exam = await mcqService.createExam(req.body, req.user!.id);
@@ -183,7 +200,7 @@ export const createExam = async (
 // @route   PUT /api/v1/mcq/exams/:id
 export const updateExam = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const exam = await mcqService.updateExam(req.params.id as string, req.body);
@@ -216,10 +233,13 @@ export const updateExam = async (
 // @route   DELETE /api/v1/mcq/exams/:id
 export const deleteExam = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
-    const exam = await mcqService.deleteExam(req.params.id as string, req.user!.id);
+    const exam = await mcqService.deleteExam(
+      req.params.id as string,
+      req.user!.id,
+    );
 
     if (!exam) {
       res.status(404).json({
@@ -249,7 +269,7 @@ export const deleteExam = async (
 // @route   PATCH /api/v1/mcq/exams/:id/publish
 export const togglePublish = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const exam = await mcqService.togglePublish(req.params.id as string);
@@ -275,7 +295,8 @@ export const togglePublish = async (
     res.status(500).json({
       success: false,
       statusCode: 500,
-      message: error instanceof Error ? error.message : "Error toggling publish",
+      message:
+        error instanceof Error ? error.message : "Error toggling publish",
     });
   }
 };
@@ -284,7 +305,7 @@ export const togglePublish = async (
 // @route   PATCH /api/v1/mcq/exams/:id/publish-results
 export const publishResults = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const exam = await mcqService.publishResults(req.params.id as string);
@@ -308,7 +329,8 @@ export const publishResults = async (
     res.status(500).json({
       success: false,
       statusCode: 500,
-      message: error instanceof Error ? error.message : "Error publishing results",
+      message:
+        error instanceof Error ? error.message : "Error publishing results",
     });
   }
 };
@@ -317,7 +339,7 @@ export const publishResults = async (
 // @route   PATCH /api/v1/mcq/exams/:id/unpublish-results
 export const unpublishResults = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const exam = await mcqService.unpublishResults(req.params.id as string);
@@ -341,7 +363,8 @@ export const unpublishResults = async (
     res.status(500).json({
       success: false,
       statusCode: 500,
-      message: error instanceof Error ? error.message : "Error unpublishing results",
+      message:
+        error instanceof Error ? error.message : "Error unpublishing results",
     });
   }
 };
@@ -352,10 +375,12 @@ export const unpublishResults = async (
 // @route   GET /api/v1/mcq/exams/:examId/questions
 export const getQuestions = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
-    const questions = await mcqService.getQuestionsByExam(req.params.examId as string);
+    const questions = await mcqService.getQuestionsByExam(
+      req.params.examId as string,
+    );
 
     res.status(200).json({
       success: true,
@@ -367,7 +392,8 @@ export const getQuestions = async (
     res.status(500).json({
       success: false,
       statusCode: 500,
-      message: error instanceof Error ? error.message : "Error fetching questions",
+      message:
+        error instanceof Error ? error.message : "Error fetching questions",
     });
   }
 };
@@ -376,10 +402,12 @@ export const getQuestions = async (
 // @route   GET /api/v1/mcq/exams/:examId/questions/student
 export const getQuestionsForStudent = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
-    const questions = await mcqService.getQuestionsForStudent(req.params.examId as string);
+    const questions = await mcqService.getQuestionsForStudent(
+      req.params.examId as string,
+    );
 
     res.status(200).json({
       success: true,
@@ -391,7 +419,8 @@ export const getQuestionsForStudent = async (
     res.status(500).json({
       success: false,
       statusCode: 500,
-      message: error instanceof Error ? error.message : "Error fetching questions",
+      message:
+        error instanceof Error ? error.message : "Error fetching questions",
     });
   }
 };
@@ -400,7 +429,7 @@ export const getQuestionsForStudent = async (
 // @route   POST /api/v1/mcq/questions
 export const createQuestion = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const question = await mcqService.createQuestion(req.body);
@@ -415,7 +444,8 @@ export const createQuestion = async (
     res.status(400).json({
       success: false,
       statusCode: 400,
-      message: error instanceof Error ? error.message : "Error creating question",
+      message:
+        error instanceof Error ? error.message : "Error creating question",
     });
   }
 };
@@ -424,10 +454,13 @@ export const createQuestion = async (
 // @route   PUT /api/v1/mcq/questions/:id
 export const updateQuestion = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
-    const question = await mcqService.updateQuestion(req.params.id as string, req.body);
+    const question = await mcqService.updateQuestion(
+      req.params.id as string,
+      req.body,
+    );
 
     if (!question) {
       res.status(404).json({
@@ -448,7 +481,8 @@ export const updateQuestion = async (
     res.status(400).json({
       success: false,
       statusCode: 400,
-      message: error instanceof Error ? error.message : "Error updating question",
+      message:
+        error instanceof Error ? error.message : "Error updating question",
     });
   }
 };
@@ -457,7 +491,7 @@ export const updateQuestion = async (
 // @route   DELETE /api/v1/mcq/questions/:id
 export const deleteQuestion = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const question = await mcqService.deleteQuestion(req.params.id as string);
@@ -481,7 +515,8 @@ export const deleteQuestion = async (
     res.status(500).json({
       success: false,
       statusCode: 500,
-      message: error instanceof Error ? error.message : "Error deleting question",
+      message:
+        error instanceof Error ? error.message : "Error deleting question",
     });
   }
 };
@@ -490,7 +525,7 @@ export const deleteQuestion = async (
 // @route   POST /api/v1/mcq/exams/:examId/questions/bulk
 export const bulkCreateQuestions = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { questions } = req.body;
@@ -506,7 +541,7 @@ export const bulkCreateQuestions = async (
 
     const created = await mcqService.bulkCreateQuestions(
       req.params.examId as string,
-      questions
+      questions,
     );
 
     res.status(201).json({
@@ -519,7 +554,8 @@ export const bulkCreateQuestions = async (
     res.status(400).json({
       success: false,
       statusCode: 400,
-      message: error instanceof Error ? error.message : "Error creating questions",
+      message:
+        error instanceof Error ? error.message : "Error creating questions",
     });
   }
 };
@@ -528,10 +564,7 @@ export const bulkCreateQuestions = async (
 
 // @desc    Start exam (create submission)
 // @route   POST /api/v1/mcq/exams/:examId/start
-export const startExam = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const startExam = async (req: Request, res: Response): Promise<void> => {
   try {
     const studentId = req.user!.id;
     const examId = req.params.examId as string;
@@ -610,13 +643,13 @@ export const startExam = async (
 // @route   GET /api/v1/mcq/exams/:examId/submission
 export const getSubmission = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const studentId = req.user!.id;
     const submission = await mcqService.getSubmission(
       req.params.examId as string,
-      studentId
+      studentId,
     );
 
     if (!submission) {
@@ -638,7 +671,8 @@ export const getSubmission = async (
     res.status(500).json({
       success: false,
       statusCode: 500,
-      message: error instanceof Error ? error.message : "Error fetching submission",
+      message:
+        error instanceof Error ? error.message : "Error fetching submission",
     });
   }
 };
@@ -647,14 +681,14 @@ export const getSubmission = async (
 // @route   POST /api/v1/mcq/exams/:examId/answer
 export const saveAnswer = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const studentId = req.user!.id;
     const submission = await mcqService.saveAnswer(
       req.params.examId as string,
       studentId,
-      req.body
+      req.body,
     );
 
     if (!submission) {
@@ -685,7 +719,7 @@ export const saveAnswer = async (
 // @route   POST /api/v1/mcq/exams/:examId/submit
 export const submitExam = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const studentId = req.user!.id;
@@ -694,7 +728,7 @@ export const submitExam = async (
     const submission = await mcqService.submitExam(
       req.params.examId as string,
       studentId,
-      isAutoSubmit
+      isAutoSubmit,
     );
 
     if (!submission) {
@@ -727,10 +761,12 @@ export const submitExam = async (
 // @route   GET /api/v1/mcq/exams/:examId/submissions
 export const getExamSubmissions = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
-    const submissions = await mcqService.getExamSubmissions(req.params.examId as string);
+    const submissions = await mcqService.getExamSubmissions(
+      req.params.examId as string,
+    );
 
     res.status(200).json({
       success: true,
@@ -742,7 +778,8 @@ export const getExamSubmissions = async (
     res.status(500).json({
       success: false,
       statusCode: 500,
-      message: error instanceof Error ? error.message : "Error fetching submissions",
+      message:
+        error instanceof Error ? error.message : "Error fetching submissions",
     });
   }
 };
@@ -751,7 +788,7 @@ export const getExamSubmissions = async (
 // @route   GET /api/v1/mcq/my-exams
 export const getMyExams = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const studentId = req.user!.id;
@@ -767,7 +804,8 @@ export const getMyExams = async (
     res.status(500).json({
       success: false,
       statusCode: 500,
-      message: error instanceof Error ? error.message : "Error fetching your exams",
+      message:
+        error instanceof Error ? error.message : "Error fetching your exams",
     });
   }
 };
@@ -776,11 +814,14 @@ export const getMyExams = async (
 // @route   GET /api/v1/mcq/exams/:examId/result
 export const getExamResult = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const studentId = req.user!.id;
-    const result = await mcqService.getExamResult(req.params.examId as string, studentId);
+    const result = await mcqService.getExamResult(
+      req.params.examId as string,
+      studentId,
+    );
 
     if (!result) {
       res.status(404).json({
@@ -810,7 +851,7 @@ export const getExamResult = async (
 // @route   POST /api/v1/mcq/exams/:examId/verify-code
 export const verifyExamCode = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const examId = req.params.examId as string;
@@ -829,7 +870,9 @@ export const verifyExamCode = async (
 
     if (!exam.accessCode) {
       // Exam has no code — always valid
-      res.status(200).json({ success: true, statusCode: 200, message: "Access granted" });
+      res
+        .status(200)
+        .json({ success: true, statusCode: 200, message: "Access granted" });
       return;
     }
 
@@ -842,7 +885,9 @@ export const verifyExamCode = async (
       return;
     }
 
-    res.status(200).json({ success: true, statusCode: 200, message: "Access granted" });
+    res
+      .status(200)
+      .json({ success: true, statusCode: 200, message: "Access granted" });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -856,11 +901,14 @@ export const verifyExamCode = async (
 // @route   GET /api/v1/mcq/exams/:examId/leaderboard
 export const getLeaderboard = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
-    const leaderboard = await mcqService.getLeaderboard(req.params.examId as string, limit);
+    const leaderboard = await mcqService.getLeaderboard(
+      req.params.examId as string,
+      limit,
+    );
 
     res.status(200).json({
       success: true,
@@ -872,7 +920,8 @@ export const getLeaderboard = async (
     res.status(500).json({
       success: false,
       statusCode: 500,
-      message: error instanceof Error ? error.message : "Error fetching leaderboard",
+      message:
+        error instanceof Error ? error.message : "Error fetching leaderboard",
     });
   }
 };
