@@ -13,7 +13,7 @@ import {
 // @route   GET /api/v1/students
 export const getStudents = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { page, limit, board, group, passingYear, district, search } =
@@ -32,14 +32,14 @@ export const getStudents = async (
     const pagination = buildPagination(
       result.total,
       result.page,
-      limit ? parseInt(limit as string) : 10
+      limit ? parseInt(limit as string) : 10,
     );
 
     paginatedResponse(
       res,
       result.students,
       pagination,
-      "Students fetched successfully"
+      "Students fetched successfully",
     );
   } catch (error) {
     errorResponse(res, "Server Error", 500);
@@ -50,11 +50,11 @@ export const getStudents = async (
 // @route   GET /api/v1/students/:id
 export const getStudent = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const student = await studentService.getStudentById(
-      req.params.id as string
+      req.params.id as string,
     );
 
     if (!student) {
@@ -72,7 +72,7 @@ export const getStudent = async (
 // @route   POST /api/v1/students/register
 export const registerStudent = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const { email, mobile, educationalInfo } = req.body;
@@ -95,7 +95,7 @@ export const registerStudent = async (
     if (educationalInfo?.ssc?.roll && educationalInfo?.ssc?.board) {
       const sscRollExists = await studentService.getStudentBySSCRoll(
         educationalInfo.ssc.roll,
-        educationalInfo.ssc.board
+        educationalInfo.ssc.board,
       );
       if (sscRollExists) {
         errorResponse(res, "SSC Roll already registered for this board", 400);
@@ -113,33 +113,37 @@ export const registerStudent = async (
     errorResponse(
       res,
       error instanceof Error ? error.message : "Error registering student",
-      400
+      400,
     );
   }
 };
 
 // @desc    Update student
-// @route   PUT /api/v1/students/:id
+// @route   PATCH /api/v1/students/:id
 export const updateStudent = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     // Check if roll is being updated and if it's already taken
     if (req.body.roll !== undefined) {
       const rollTaken = await studentService.rollExists(
         req.body.roll,
-        req.params.id as string
+        req.params.id as string,
       );
       if (rollTaken) {
-        errorResponse(res, "This roll number is already assigned to another student", 400);
+        errorResponse(
+          res,
+          "This roll number is already assigned to another student",
+          400,
+        );
         return;
       }
     }
 
     const student = await studentService.updateStudent(
       req.params.id as string,
-      req.body
+      req.body,
     );
 
     if (!student) {
@@ -152,19 +156,25 @@ export const updateStudent = async (
     errorResponse(
       res,
       error instanceof Error ? error.message : "Error updating student",
-      400
+      400,
     );
   }
 };
 
-// @desc    Delete student
+// @desc    Delete student (soft delete)
 // @route   DELETE /api/v1/students/:id
 export const deleteStudent = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
-    const student = await studentService.deleteStudent(req.params.id as string);
+    // Get admin ID from req.user if available
+    const deletedBy = (req as any).user?.id || "admin";
+
+    const student = await studentService.deleteStudent(
+      req.params.id as string,
+      deletedBy,
+    );
 
     if (!student) {
       notFoundResponse(res, "Student not found");
@@ -181,7 +191,7 @@ export const deleteStudent = async (
 // @route   PATCH /api/v1/students/:id/verify
 export const verifyStudent = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const student = await studentService.verifyStudent(req.params.id as string);
@@ -201,11 +211,11 @@ export const verifyStudent = async (
 // @route   PATCH /api/v1/students/:id/toggle-status
 export const toggleStatus = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     const student = await studentService.toggleActiveStatus(
-      req.params.id as string
+      req.params.id as string,
     );
 
     if (!student) {
@@ -218,7 +228,7 @@ export const toggleStatus = async (
       student,
       student.isActive
         ? "Student activated successfully"
-        : "Student deactivated successfully"
+        : "Student deactivated successfully",
     );
   } catch (error) {
     errorResponse(res, "Server Error", 500);

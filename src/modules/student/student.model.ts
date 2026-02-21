@@ -271,6 +271,18 @@ const studentSchema: Schema<IStudent> = new Schema(
       default: "student",
       immutable: true,
     },
+
+    // Soft Delete
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    deletedAt: {
+      type: Date,
+    },
+    deletedBy: {
+      type: String,
+    },
   },
   {
     timestamps: true,

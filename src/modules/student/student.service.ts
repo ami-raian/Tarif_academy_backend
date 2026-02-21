@@ -37,6 +37,9 @@ class StudentService {
 
     const query: Record<string, unknown> = {};
 
+    // Filter out soft-deleted students
+    query.isDeleted = { $ne: true };
+
     if (board) query["educationalInfo.ssc.board"] = board;
     if (group) query["educationalInfo.ssc.group"] = group;
     if (passingYear) query["educationalInfo.ssc.passingYear"] = passingYear;
@@ -77,17 +80,19 @@ class StudentService {
 
   // Get student by ID
   async getStudentById(id: string): Promise<IStudent | null> {
-    return await Student.findById(id);
+    return await Student.findOne({ _id: id, isDeleted: { $ne: true } });
   }
 
   // Get student by email
   async getStudentByEmail(email: string): Promise<IStudent | null> {
-    return await Student.findOne({ email });
+    return await Student.findOne({ email, isDeleted: { $ne: true } });
   }
 
   // Get student by email with password (for login)
   async getStudentByEmailWithPassword(email: string): Promise<IStudent | null> {
-    return await Student.findOne({ email }).select("+password");
+    return await Student.findOne({ email, isDeleted: { $ne: true } }).select(
+      "+password",
+    );
   }
 
   // Get student by mobile
@@ -98,7 +103,7 @@ class StudentService {
   // Get student by SSC Roll and Board
   async getStudentBySSCRoll(
     sscRoll: string,
-    board: string
+    board: string,
   ): Promise<IStudent | null> {
     return await Student.findOne({
       "educationalInfo.ssc.roll": sscRoll,
@@ -108,7 +113,9 @@ class StudentService {
 
   // Generate next unique roll number
   async generateNextRoll(): Promise<number> {
-    const lastStudent = await Student.findOne().sort({ roll: -1 }).select("roll");
+    const lastStudent = await Student.findOne()
+      .sort({ roll: -1 })
+      .select("roll");
     return lastStudent?.roll ? lastStudent.roll + 1 : 1001;
   }
 
@@ -128,7 +135,7 @@ class StudentService {
   // Update student
   async updateStudent(
     id: string,
-    studentData: IUpdateStudentInput
+    studentData: IUpdateStudentInput,
   ): Promise<IStudent | null> {
     return await Student.findByIdAndUpdate(id, studentData, {
       new: true,
@@ -136,23 +143,34 @@ class StudentService {
     });
   }
 
-  // Delete student
-  async deleteStudent(id: string): Promise<IStudent | null> {
-    return await Student.findByIdAndDelete(id);
+  // Delete student (soft delete)
+  async deleteStudent(
+    id: string,
+    deletedBy?: string,
+  ): Promise<IStudent | null> {
+    return await Student.findByIdAndUpdate(
+      id,
+      {
+        isDeleted: true,
+        deletedAt: new Date(),
+        deletedBy: deletedBy || "admin",
+      },
+      { new: true },
+    );
   }
 
   // Verify student
   async verifyStudent(id: string): Promise<IStudent | null> {
-    return await Student.findByIdAndUpdate(
-      id,
+    return await Student.findOneAndUpdate(
+      { _id: id, isDeleted: false },
       { isVerified: true },
-      { new: true }
+      { new: true },
     );
   }
 
   // Toggle active status
   async toggleActiveStatus(id: string): Promise<IStudent | null> {
-    const student = await Student.findById(id);
+    const student = await Student.findOne({ _id: id, isDeleted: false });
     if (!student) return null;
 
     student.isActive = !student.isActive;
@@ -162,13 +180,13 @@ class StudentService {
 
   // Check if email exists
   async emailExists(email: string): Promise<boolean> {
-    const student = await Student.findOne({ email });
+    const student = await Student.findOne({ email, isDeleted: false });
     return !!student;
   }
 
   // Check if mobile exists
   async mobileExists(mobile: string): Promise<boolean> {
-    const student = await Student.findOne({ mobile });
+    const student = await Student.findOne({ mobile, isDeleted: false });
     return !!student;
   }
 
@@ -191,12 +209,14 @@ class StudentService {
     byGroup: Record<string, number>;
   }> {
     const [total, verified, boardStats, groupStats] = await Promise.all([
-      Student.countDocuments(),
-      Student.countDocuments({ isVerified: true }),
+      Student.countDocuments({ isDeleted: false }),
+      Student.countDocuments({ isVerified: true, isDeleted: false }),
       Student.aggregate([
+        { $match: { isDeleted: false } },
         { $group: { _id: "$educationalInfo.ssc.board", count: { $sum: 1 } } },
       ]),
       Student.aggregate([
+        { $match: { isDeleted: false } },
         { $group: { _id: "$educationalInfo.ssc.group", count: { $sum: 1 } } },
       ]),
     ]);
@@ -223,7 +243,7 @@ class StudentService {
   // Update student password
   async updateStudentPassword(
     id: string,
-    hashedPassword: string
+    hashedPassword: string,
   ): Promise<void> {
     await Student.findByIdAndUpdate(id, { password: hashedPassword });
   }
