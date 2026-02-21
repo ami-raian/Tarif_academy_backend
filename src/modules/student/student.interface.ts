@@ -117,6 +117,11 @@ export interface IStudent extends Document {
   isActive: boolean;
   role: "student";
 
+  // Soft Delete
+  isDeleted: boolean;
+  deletedAt?: Date;
+  deletedBy?: string;
+
   // Timestamps
   createdAt: Date;
   updatedAt: Date;

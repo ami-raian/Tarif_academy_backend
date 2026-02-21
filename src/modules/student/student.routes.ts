@@ -31,10 +31,10 @@ router.post("/register", validate(registerStudentSchema), registerStudent);
 router
   .route("/:id")
   .get(validate(idParamSchema, "params"), getStudent)
-  .put(
+  .patch(
     validate(idParamSchema, "params"),
     validate(updateStudentSchema),
-    updateStudent
+    updateStudent,
   )
   .delete(validate(idParamSchema, "params"), deleteStudent);
 
@@ -43,7 +43,7 @@ router.patch("/:id/verify", validate(idParamSchema, "params"), verifyStudent);
 router.patch(
   "/:id/toggle-status",
   validate(idParamSchema, "params"),
-  toggleStatus
+  toggleStatus,
 );
 
 export default router;

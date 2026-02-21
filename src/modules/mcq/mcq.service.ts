@@ -394,6 +394,11 @@ class McqService {
           answer.isCorrect = true;
           answer.marksObtained = question.marks;
           obtainedMarks += question.marks;
+        } else {
+          // Apply negative marking for wrong answers
+          answer.isCorrect = false;
+          answer.marksObtained = -exam.negativeMarking;
+          obtainedMarks -= exam.negativeMarking;
         }
       }
     }
