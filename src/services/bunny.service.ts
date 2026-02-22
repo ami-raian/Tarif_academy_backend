@@ -236,6 +236,46 @@ class BunnyStreamService {
   }
 
   /**
+   * Stream upload video directly from a Node.js Readable stream (no RAM buffering)
+   * @param videoId - The GUID from createVideo()
+   * @param stream - Readable stream (e.g., Express req)
+   * @param contentLength - Content-Length header value
+   */
+  async streamUploadVideo(videoId: string, stream: NodeJS.ReadableStream, contentLength: string) {
+    try {
+      console.log(`📤 Streaming video to Bunny (${(parseInt(contentLength) / 1024 / 1024).toFixed(2)} MB)...`);
+
+      const response = await axios.put(
+        `${this.baseURL}/library/${this.libraryId}/videos/${videoId}`,
+        stream,
+        {
+          headers: {
+            AccessKey: this.apiKey,
+            "Content-Type": "application/octet-stream",
+            "Content-Length": contentLength,
+          },
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity,
+        }
+      );
+
+      console.log(`✅ Video streamed successfully to Bunny`);
+
+      return {
+        success: true,
+        message: "Video uploaded successfully",
+        data: response.data,
+      };
+    } catch (error: any) {
+      console.error(
+        "❌ Error streaming video to Bunny.net:",
+        error.response?.data || error.message
+      );
+      throw new Error(`Failed to stream video to Bunny Stream: ${error.response?.data?.Message || error.message}`);
+    }
+  }
+
+  /**
    * Update video details (title, description, etc.)
    */
   async updateVideo(
