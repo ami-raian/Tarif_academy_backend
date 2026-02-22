@@ -52,7 +52,11 @@ app.use(
 // and would reject large uploads with 413 before the controller can stream them
 const skipForUploadStream = (parser: any) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    if (req.path.includes("/upload-stream")) return next();
+    // Use originalUrl (full original URL) — req.path can be relative to mount point inside routers
+    if ((req.originalUrl || req.path).includes("/upload-stream")) {
+      console.log(`⏭️  Bypassing body parser for: ${req.method} ${req.originalUrl}`);
+      return next();
+    }
     return parser(req, res, next);
   };
 };
