@@ -1,4 +1,4 @@
-import express, { Application, Request, Response } from "express";
+import express, { Application, Request, Response, NextFunction } from "express";
 import cors from "cors";
 import path from "path";
 import routes from "./routes";
@@ -48,8 +48,17 @@ app.use(
   }),
 );
 
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+// Skip body parsers for video streaming uploads — they check Content-Length globally in Express 5
+// and would reject large uploads with 413 before the controller can stream them
+const skipForUploadStream = (parser: any) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (req.path.includes("/upload-stream")) return next();
+    return parser(req, res, next);
+  };
+};
+
+app.use(skipForUploadStream(express.json({ limit: "10mb" })));
+app.use(skipForUploadStream(express.urlencoded({ extended: true, limit: "10mb" })));
 
 // Serve static files from public folder
 app.use(
