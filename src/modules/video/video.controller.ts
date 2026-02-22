@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import videoService from "./video.service";
+import Video from "./video.model";
+import bunnyService from "../../services/bunny.service";
 import { successResponse, errorResponse, createdResponse } from "../../shared";
 
 class VideoController {
@@ -74,6 +76,78 @@ class VideoController {
       return createdResponse(res, result, result.message);
     } catch (error: any) {
       console.error("❌ Video upload error:", error.message);
+      return errorResponse(res, error.message);
+    }
+  }
+
+  /**
+   * Create video session (metadata only) — Step 1 of streaming upload
+   * POST /api/v1/videos/create-session
+   */
+  async createVideoSession(req: Request, res: Response) {
+    try {
+      const adminId = req.user?.id;
+      if (!adminId) {
+        return errorResponse(res, "Authentication required", 401);
+      }
+
+      const { title, courseId, sectionTitle, order } = req.body;
+      if (!title || !courseId || !sectionTitle || !order) {
+        return errorResponse(
+          res,
+          "Missing required fields: title, courseId, sectionTitle, order",
+          400
+        );
+      }
+
+      const videoData = {
+        title,
+        description: req.body.description || "",
+        courseId,
+        sectionTitle,
+        order: parseInt(order, 10),
+        isFree: req.body.isFree === true || req.body.isFree === "true",
+      };
+
+      const result = await videoService.createVideoSession(videoData, adminId);
+      return createdResponse(res, result, result.message);
+    } catch (error: any) {
+      return errorResponse(res, error.message);
+    }
+  }
+
+  /**
+   * Stream upload video — Step 2 of streaming upload (no RAM buffering)
+   * PUT /api/v1/videos/:bunnyGuid/upload-stream
+   * Content-Type: application/octet-stream
+   */
+  async streamUploadVideo(req: Request, res: Response) {
+    try {
+      const adminId = req.user?.id;
+      if (!adminId) {
+        return errorResponse(res, "Authentication required", 401);
+      }
+
+      const bunnyGuid = req.params.bunnyGuid as string;
+      const contentLengthHeader = req.headers["content-length"];
+      const contentLength = Array.isArray(contentLengthHeader)
+        ? contentLengthHeader[0]
+        : contentLengthHeader;
+
+      if (!contentLength) {
+        return errorResponse(res, "Content-Length header required", 400);
+      }
+
+      const video = await Video.findOne({ bunnyGuid });
+      if (!video) {
+        return errorResponse(res, "Video not found", 404);
+      }
+
+      await bunnyService.streamUploadVideo(bunnyGuid, req, contentLength);
+
+      return successResponse(res, { bunnyGuid, videoId: video._id }, "Video uploaded successfully. Processing will begin shortly.");
+    } catch (error: any) {
+      console.error("❌ Stream upload error:", error.message);
       return errorResponse(res, error.message);
     }
   }

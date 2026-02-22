@@ -112,6 +112,48 @@ class VideoService {
   }
 
   /**
+   * Create video entry only (no file upload) — Step 1 of streaming upload
+   * Returns bunnyGuid so frontend can stream directly
+   */
+  async createVideoSession(videoData: ICreateVideoInput, adminId: string) {
+    const course = await Course.findById(videoData.courseId);
+    if (!course) {
+      throw new Error("Course not found");
+    }
+
+    console.log(`📹 Creating video session "${videoData.title}" for course "${course.title}"`);
+
+    const bunnyVideo = await bunnyService.createVideo(videoData.title);
+    if (!bunnyVideo.success) {
+      throw new Error("Failed to create video in Bunny Stream");
+    }
+
+    const video = await Video.create({
+      title: videoData.title,
+      description: videoData.description,
+      courseId: videoData.courseId,
+      sectionTitle: videoData.sectionTitle,
+      order: videoData.order,
+      bunnyVideoId: bunnyVideo.videoId,
+      bunnyGuid: bunnyVideo.videoId,
+      isFree: videoData.isFree || false,
+      status: "processing",
+    });
+
+    await Course.findByIdAndUpdate(videoData.courseId, {
+      $inc: { totalLessons: 1 },
+    });
+
+    console.log(`✅ Video session created. bunnyGuid: ${bunnyVideo.videoId}`);
+
+    return {
+      videoId: video._id,
+      bunnyGuid: bunnyVideo.videoId,
+      message: "Video session created. Ready for streaming upload.",
+    };
+  }
+
+  /**
    * Get all videos for a course (grouped by sections)
    */
   async getCourseVideos(
