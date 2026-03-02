@@ -51,14 +51,10 @@ class StudentService {
         { fullName: { $regex: search, $options: "i" } },
         { email: { $regex: search, $options: "i" } },
         { mobile: { $regex: search, $options: "i" } },
+        { roll: { $regex: search, $options: "i" } },
         { "educationalInfo.ssc.roll": { $regex: search, $options: "i" } },
         { "educationalInfo.ssc.schoolName": { $regex: search, $options: "i" } },
       ];
-
-      const searchAsNumber = Number(search);
-      if (!isNaN(searchAsNumber)) {
-        searchConditions.push({ roll: searchAsNumber });
-      }
 
       query.$or = searchConditions;
     }
@@ -112,15 +108,28 @@ class StudentService {
   }
 
   // Generate next unique roll number
-  async generateNextRoll(): Promise<number> {
-    const lastStudent = await Student.findOne()
-      .sort({ roll: -1 })
+  async generateNextRoll(): Promise<string> {
+    const lastStudent = await Student.findOne({
+      roll: { $exists: true, $ne: null },
+    })
+      .sort({ createdAt: -1 })
       .select("roll");
-    return lastStudent?.roll ? lastStudent.roll + 1 : 1001;
+
+    if (!lastStudent?.roll) {
+      return "1001";
+    }
+
+    // Extract number from roll string and increment
+    const lastRollNumber = parseInt(lastStudent.roll);
+    if (isNaN(lastRollNumber)) {
+      return "1001";
+    }
+
+    return String(lastRollNumber + 1);
   }
 
   // Check if roll exists (excluding a specific student for updates)
-  async rollExists(roll: number, excludeId?: string): Promise<boolean> {
+  async rollExists(roll: string, excludeId?: string): Promise<boolean> {
     const query: Record<string, unknown> = { roll };
     if (excludeId) query._id = { $ne: excludeId };
     const student = await Student.findOne(query);

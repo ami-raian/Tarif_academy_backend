@@ -181,8 +181,10 @@ const studentSchema: Schema<IStudent> = new Schema(
   {
     // Unique Identifier
     roll: {
-      type: Number,
+      type: String,
       unique: true,
+      sparse: true,
+      trim: true,
     },
 
     // Personal Info
