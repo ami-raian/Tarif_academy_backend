@@ -419,11 +419,36 @@ class McqService {
   }
 
   // Get all submissions for an exam (for admin)
-  async getExamSubmissions(examId: string): Promise<IMcqSubmission[]> {
-    return await McqSubmission.find({ examId })
-      .populate("studentId", "fullName email mobile")
-      .populate("examId", "title totalMarks passingMarks")
-      .sort({ obtainedMarks: -1 });
+  async getExamSubmissions(
+    examId: string,
+    options: { page?: number; limit?: number } = {},
+  ): Promise<{
+    submissions: IMcqSubmission[];
+    total: number;
+    page: number;
+    totalPages: number;
+  }> {
+    const { page = 1, limit = 10 } = options;
+    const skip = (page - 1) * limit;
+
+    const query = { examId };
+
+    const [submissions, total] = await Promise.all([
+      McqSubmission.find(query)
+        .populate("studentId", "roll fullName email mobile")
+        .populate("examId", "title totalMarks passingMarks")
+        .sort({ obtainedMarks: -1 })
+        .skip(skip)
+        .limit(limit),
+      McqSubmission.countDocuments(query),
+    ]);
+
+    return {
+      submissions: submissions as IMcqSubmission[],
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   // Get student's all submissions

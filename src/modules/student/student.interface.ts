@@ -89,7 +89,7 @@ export interface IEducationalInfo {
 // Main Student Interface
 export interface IStudent extends Document {
   // Unique Identifier
-  roll: number;
+  roll: string;
 
   // Personal Info
   fullName: string;
@@ -146,7 +146,7 @@ export interface ICreateStudentInput {
 
 // Update Student Input
 export interface IUpdateStudentInput {
-  roll?: number;
+  roll?: string;
   fullName?: string;
   mobile?: string;
   whatsapp?: string;

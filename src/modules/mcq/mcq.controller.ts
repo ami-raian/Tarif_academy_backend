@@ -764,15 +764,27 @@ export const getExamSubmissions = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const submissions = await mcqService.getExamSubmissions(
+    const { page, limit } = req.query;
+
+    const result = await mcqService.getExamSubmissions(
       req.params.examId as string,
+      {
+        page: page ? parseInt(page as string) : undefined,
+        limit: limit ? parseInt(limit as string) : undefined,
+      },
     );
 
     res.status(200).json({
       success: true,
       statusCode: 200,
       message: "Submissions fetched successfully",
-      data: submissions,
+      data: result.submissions,
+      pagination: {
+        totalItems: result.total,
+        totalPages: result.totalPages,
+        currentPage: result.page,
+        pageSize: limit ? parseInt(limit as string) : 10,
+      },
     });
   } catch (error) {
     res.status(500).json({
