@@ -430,6 +430,12 @@ class McqService {
     submission.status = "evaluated";
 
     await submission.save();
+
+    // Auto-publish result if exam has instantResult enabled
+    if (exam.instantResult && !exam.isResultPublished) {
+      await McqExam.findByIdAndUpdate(examId, { isResultPublished: true });
+    }
+
     return submission;
   }
 

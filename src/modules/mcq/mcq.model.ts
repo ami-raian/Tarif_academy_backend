@@ -92,6 +92,10 @@ const mcqExamSchema: Schema<IMcqExam> = new Schema(
       type: Boolean,
       default: false,
     },
+    instantResult: {
+      type: Boolean,
+      default: false,
+    },
     accessCode: {
       type: String,
       trim: true,
