@@ -21,6 +21,7 @@ export interface IMcqQuestion extends Document {
 export interface IMcqExam extends Document {
   title: string;
   description?: string;
+  courseId?: Types.ObjectId; // optional: link to a specific course
   duration: number; // in minutes
   totalQuestions: number;
   totalMarks: number;
@@ -28,6 +29,7 @@ export interface IMcqExam extends Document {
   negativeMarking: number; // marks to deduct per wrong answer (0 means no negative marking)
   isPublished: boolean;
   isResultPublished: boolean;
+  instantResult: boolean; // if true, result is auto-published when student submits
   accessCode?: string; // optional: if set, students must enter this code to start
   startTime?: Date;
   endTime?: Date;
@@ -68,10 +70,12 @@ export interface IMcqSubmission extends Document {
 export interface ICreateExamInput {
   title: string;
   description?: string;
+  courseId?: string;
   duration: number;
   passingMarks: number;
   negativeMarking?: number;
   accessCode?: string;
+  instantResult?: boolean;
   startTime?: Date;
   endTime?: Date;
 }
@@ -87,10 +91,12 @@ export interface ICreateQuestionInput {
 export interface IUpdateExamInput {
   title?: string;
   description?: string;
+  courseId?: string;
   duration?: number;
   passingMarks?: number;
   negativeMarking?: number;
   accessCode?: string;
+  instantResult?: boolean;
   startTime?: Date;
   endTime?: Date;
   isPublished?: boolean;

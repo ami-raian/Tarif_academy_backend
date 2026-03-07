@@ -7,7 +7,7 @@ import mcqService from "./mcq.service";
 // @route   GET /api/v1/mcq/exams
 export const getExams = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { page, limit, isPublished, isResultPublished, search } = req.query;
+    const { page, limit, isPublished, isResultPublished, search, courseId } = req.query;
 
     const result = await mcqService.getAllExams({
       page: page ? parseInt(page as string) : undefined,
@@ -25,6 +25,7 @@ export const getExams = async (req: Request, res: Response): Promise<void> => {
             ? false
             : undefined,
       search: search as string,
+      courseId: courseId as string,
     });
 
     res.status(200).json({
@@ -56,12 +57,13 @@ export const getPublishedExams = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const { page, limit, search } = req.query;
+    const { page, limit, search, courseId } = req.query;
 
     const result = await mcqService.getPublishedExams({
       page: page ? parseInt(page as string) : undefined,
       limit: limit ? parseInt(limit as string) : undefined,
       search: search as string,
+      courseId: courseId as string,
     });
 
     // Strip accessCode, expose hasAccessCode boolean
