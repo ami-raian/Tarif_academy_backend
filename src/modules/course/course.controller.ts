@@ -1,6 +1,17 @@
 import { Request, Response } from "express";
 import courseService from "./course.service";
 
+// Helper function to transform course data for frontend
+const transformCourseData = (course: any) => {
+  return {
+    ...course,
+    instructor:
+      typeof course.instructor === "object" && course.instructor?.name
+        ? course.instructor.name
+        : course.instructor || null,
+  };
+};
+
 // @desc    Get all courses
 // @route   GET /api/courses
 export const getCourses = async (
@@ -28,11 +39,14 @@ export const getCourses = async (
 
     const pageSize = limit ? parseInt(limit as string) : 10;
 
+    // Transform instructor field for all courses
+    const transformedCourses = result.courses.map(transformCourseData);
+
     res.status(200).json({
       success: true,
       statusCode: 200,
       message: "Courses fetched successfully",
-      data: result.courses,
+      data: transformedCourses,
       pagination: {
         totalItems: result.total,
         totalPages: result.totalPages,
@@ -70,7 +84,7 @@ export const getCourse = async (req: Request, res: Response): Promise<void> => {
       success: true,
       statusCode: 200,
       message: "Course fetched successfully",
-      data: course,
+      data: transformCourseData(course),
     });
   } catch (error) {
     console.error("Error fetching course:", error);
@@ -106,7 +120,7 @@ export const getCourseBySlug = async (
       success: true,
       statusCode: 200,
       message: "Course fetched successfully",
-      data: course,
+      data: transformCourseData(course),
     });
   } catch (error) {
     res.status(500).json({

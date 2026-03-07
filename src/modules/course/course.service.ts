@@ -88,18 +88,16 @@ class CourseService {
 
   // Get course by ID
   async getCourseById(id: string): Promise<ICourse | null> {
-    return await Course.findOne({ _id: id, isDeleted: false }).populate(
-      "instructor",
-      "name email",
-    );
+    return await Course.findOne({ _id: id, isDeleted: false })
+      .populate("instructor", "name email")
+      .lean();
   }
 
   // Get course by slug
   async getCourseBySlug(slug: string): Promise<ICourse | null> {
-    return await Course.findOne({ slug, isDeleted: false }).populate(
-      "instructor",
-      "name email",
-    );
+    return await Course.findOne({ slug, isDeleted: false })
+      .populate("instructor", "name email")
+      .lean();
   }
 
   // Create new course
