@@ -15,6 +15,7 @@ interface QueryOptions {
   isPublished?: boolean;
   isResultPublished?: boolean;
   search?: string;
+  courseId?: string;
 }
 
 class McqService {
@@ -33,6 +34,7 @@ class McqService {
       isPublished,
       isResultPublished,
       search,
+      courseId,
     } = options;
 
     const query: Record<string, unknown> = { isDeleted: false };
@@ -43,6 +45,10 @@ class McqService {
 
     if (isResultPublished !== undefined) {
       query.isResultPublished = isResultPublished;
+    }
+
+    if (courseId) {
+      query.courseId = courseId;
     }
 
     if (search) {
@@ -57,6 +63,7 @@ class McqService {
     const [exams, total] = await Promise.all([
       McqExam.find(query)
         .populate("createdBy", "name email")
+        .populate("courseId", "title")
         .skip(skip)
         .limit(limit)
         .sort({ createdAt: -1 })
@@ -79,12 +86,19 @@ class McqService {
     page: number;
     totalPages: number;
   }> {
-    const { page = 1, limit = 10, search } = options;
+    const { page = 1, limit = 10, search, courseId } = options;
 
     const query: Record<string, unknown> = {
       isDeleted: false,
       isPublished: true,
     };
+
+    if (courseId) {
+      query.courseId = courseId;
+    } else {
+      // Global exams page: only show exams not linked to any course
+      query.courseId = { $exists: false };
+    }
 
     if (search) {
       query.$or = [
@@ -98,6 +112,7 @@ class McqService {
     const [exams, total] = await Promise.all([
       McqExam.find(query)
         .select("-isDeleted -deletedAt -deletedBy")
+        .populate("courseId", "title")
         .skip(skip)
         .limit(limit)
         .sort({ createdAt: -1 })

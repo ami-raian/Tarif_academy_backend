@@ -56,6 +56,11 @@ const mcqExamSchema: Schema<IMcqExam> = new Schema(
       type: String,
       trim: true,
     },
+    courseId: {
+      type: Schema.Types.ObjectId,
+      ref: "Course",
+      index: true,
+    },
     duration: {
       type: Number,
       required: [true, "Exam duration is required"],

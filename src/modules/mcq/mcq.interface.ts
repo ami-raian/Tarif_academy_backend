@@ -21,6 +21,7 @@ export interface IMcqQuestion extends Document {
 export interface IMcqExam extends Document {
   title: string;
   description?: string;
+  courseId?: Types.ObjectId; // optional: link to a specific course
   duration: number; // in minutes
   totalQuestions: number;
   totalMarks: number;
@@ -68,6 +69,7 @@ export interface IMcqSubmission extends Document {
 export interface ICreateExamInput {
   title: string;
   description?: string;
+  courseId?: string;
   duration: number;
   passingMarks: number;
   negativeMarking?: number;
@@ -87,6 +89,7 @@ export interface ICreateQuestionInput {
 export interface IUpdateExamInput {
   title?: string;
   description?: string;
+  courseId?: string;
   duration?: number;
   passingMarks?: number;
   negativeMarking?: number;
