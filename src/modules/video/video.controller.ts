@@ -138,6 +138,11 @@ class VideoController {
         return errorResponse(res, "Content-Length header required", 400);
       }
 
+      const MAX_VIDEO_SIZE = 5 * 1024 * 1024 * 1024; // 5GB
+      if (Number(contentLength) > MAX_VIDEO_SIZE) {
+        return errorResponse(res, "File too large. Maximum size is 5GB", 413);
+      }
+
       const video = await Video.findOne({ bunnyGuid });
       if (!video) {
         return errorResponse(res, "Video not found", 404);
