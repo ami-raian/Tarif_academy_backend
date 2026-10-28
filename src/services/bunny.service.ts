@@ -191,6 +191,13 @@ class BunnyStreamService {
         message: "Video deleted successfully",
       };
     } catch (error: any) {
+      // Already gone on Bunny (e.g. upload never completed) - nothing to delete
+      if (error.response?.status === 404) {
+        return {
+          success: true,
+          message: "Video not found on Bunny, skipped",
+        };
+      }
       console.error(
         "Error deleting video:",
         error.response?.data || error.message
