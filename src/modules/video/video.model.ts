@@ -47,6 +47,17 @@ const videoSchema: Schema<IVideo> = new Schema(
     thumbnailUrl: {
       type: String,
     },
+    notesUrl: {
+      type: String,
+    },
+    notesFileName: {
+      type: String,
+      trim: true,
+    },
+    notesSize: {
+      type: Number,
+      min: 0,
+    },
     status: {
       type: String,
       enum: ["processing", "ready", "failed"],

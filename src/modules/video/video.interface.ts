@@ -10,6 +10,9 @@ export interface IVideo extends Document {
   bunnyVideoId: string; // Bunny.net video ID
   bunnyGuid: string; // Bunny.net GUID
   thumbnailUrl?: string;
+  notesUrl?: string; // PDF notes path, e.g. /uploads/notes/notes-123.pdf
+  notesFileName?: string; // Original PDF file name (for display)
+  notesSize?: number; // in bytes
   status: "processing" | "ready" | "failed";
   isFree: boolean; // Free preview videos
   createdAt: Date;

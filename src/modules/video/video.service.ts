@@ -1,8 +1,27 @@
+import fs from "fs";
+import path from "path";
 import Video from "./video.model";
 import Course from "../course/course.model";
 import Enrollment from "../enrollment/enrollment.model";
 import bunnyService from "../../services/bunny.service";
 import { ICreateVideoInput } from "./video.interface";
+
+const NOTES_DIR = path.join(process.cwd(), "public", "uploads", "notes");
+
+/**
+ * Remove a notes PDF from disk. Only ever touches files inside NOTES_DIR.
+ */
+const deleteNotesFile = async (notesUrl?: string) => {
+  if (!notesUrl) return;
+  const filePath = path.join(NOTES_DIR, path.basename(notesUrl));
+  try {
+    await fs.promises.unlink(filePath);
+  } catch (error: any) {
+    if (error.code !== "ENOENT") {
+      console.error(`⚠️ Failed to delete notes file ${filePath}:`, error.message);
+    }
+  }
+};
 
 class VideoService {
   /**
@@ -199,6 +218,9 @@ class VideoService {
             isFree: video.isFree,
             status: video.status,
             thumbnailUrl: video.thumbnailUrl,
+            notesUrl: video.notesUrl,
+            notesFileName: video.notesFileName,
+            notesSize: video.notesSize,
             locked: false,
             completed: enrollment?.completedVideos.includes(video._id) || false,
           });
@@ -335,12 +357,70 @@ class VideoService {
     // Delete from database
     await Video.findByIdAndDelete(videoId);
 
+    // Remove attached notes PDF from disk
+    await deleteNotesFile(video.notesUrl);
+
     // Update course's total lessons count
     await Course.findByIdAndUpdate(video.courseId, {
       $inc: { totalLessons: -1 },
     });
 
     return { message: "Video deleted successfully" };
+  }
+
+  /**
+   * Attach (or replace) the notes PDF of a video
+   */
+  async attachNotes(videoId: string, file: Express.Multer.File) {
+    const notesUrl = `/uploads/notes/${file.filename}`;
+    let previousNotesUrl: string | undefined;
+    let video;
+
+    try {
+      video = await Video.findById(videoId);
+      if (!video) {
+        throw new Error("Video not found");
+      }
+
+      previousNotesUrl = video.notesUrl;
+
+      video.notesUrl = notesUrl;
+      video.notesFileName = file.originalname;
+      video.notesSize = file.size;
+      await video.save();
+    } catch (error) {
+      // Don't leave an orphan file behind if saving failed
+      await deleteNotesFile(notesUrl);
+      throw error;
+    }
+
+    // Replacing — clean up the old file
+    if (previousNotesUrl && previousNotesUrl !== notesUrl) {
+      await deleteNotesFile(previousNotesUrl);
+    }
+
+    return video;
+  }
+
+  /**
+   * Remove the notes PDF of a video
+   */
+  async removeNotes(videoId: string) {
+    const video = await Video.findById(videoId);
+    if (!video) {
+      throw new Error("Video not found");
+    }
+
+    const notesUrl = video.notesUrl;
+
+    video.notesUrl = undefined;
+    video.notesFileName = undefined;
+    video.notesSize = undefined;
+    await video.save();
+
+    await deleteNotesFile(notesUrl);
+
+    return video;
   }
 
   /**

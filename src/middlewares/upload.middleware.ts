@@ -28,6 +28,22 @@ const diskStorage = multer.diskStorage({
   },
 });
 
+// Configure multer for disk storage (for video notes PDFs)
+const notesStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(process.cwd(), "public", "uploads", "notes");
+    // Create directory if it doesn't exist
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, `notes-${uniqueSuffix}.pdf`);
+  },
+});
+
 // File filter for video files
 const videoFileFilter = (
   req: Request,
@@ -94,6 +110,21 @@ const imageFileFilter = (
   }
 };
 
+// File filter for PDF files
+const pdfFileFilter = (
+  req: Request,
+  file: Express.Multer.File,
+  cb: FileFilterCallback,
+) => {
+  const ext = path.extname(file.originalname).toLowerCase();
+
+  if (ext === ".pdf" && file.mimetype === "application/pdf") {
+    cb(null, true);
+  } else {
+    cb(new Error("শুধুমাত্র PDF ফাইল আপলোড করা যাবে"));
+  }
+};
+
 // Video upload middleware - max 500MB
 export const uploadVideo = multer({
   storage,
@@ -152,6 +183,48 @@ export const handleThumbnailUpload = (
         return res.status(400).json({
           success: false,
           message: "ফাইল সাইজ খুব বড়। সর্বোচ্চ ৫MB আপলোড করা যাবে",
+        });
+      }
+      return res.status(400).json({
+        success: false,
+        message: err.message,
+      });
+    } else if (err) {
+      return res.status(400).json({
+        success: false,
+        message: err.message,
+      });
+    }
+    next();
+  });
+};
+
+// Notes PDF upload middleware - max 50MB
+export const MAX_NOTES_SIZE_MB = 50;
+
+export const uploadNotes = multer({
+  storage: notesStorage,
+  fileFilter: pdfFileFilter,
+  limits: {
+    fileSize: MAX_NOTES_SIZE_MB * 1024 * 1024,
+  },
+  // Keep Bangla/unicode file names intact (multer defaults to latin1).
+  // Supported by multer but missing from @types/multer, hence the cast.
+  defParamCharset: "utf8",
+} as multer.Options).single("notes"); // Field name: "notes"
+
+// Wrapper to handle notes upload errors
+export const handleNotesUpload = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  uploadNotes(req, res, (err: any) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === "LIMIT_FILE_SIZE") {
+        return res.status(400).json({
+          success: false,
+          message: `PDF ফাইল খুব বড়। সর্বোচ্চ ${MAX_NOTES_SIZE_MB}MB আপলোড করা যাবে`,
         });
       }
       return res.status(400).json({

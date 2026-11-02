@@ -1,7 +1,7 @@
 import { Router } from "express";
 import videoController from "./video.controller";
 import { protect, protectAdmin, protectStudent } from "../auth/auth.middleware";
-import { handleVideoUpload } from "../../middlewares/upload.middleware";
+import { handleVideoUpload, handleNotesUpload } from "../../middlewares/upload.middleware";
 
 const router = Router();
 
@@ -22,6 +22,11 @@ router.post("/upload", protectAdmin, handleVideoUpload, videoController.uploadVi
 router.patch("/:videoId", protectAdmin, videoController.updateVideo);
 router.delete("/:videoId", protectAdmin, videoController.deleteVideo);
 router.get("/:videoId/status", protectAdmin, videoController.checkEncodingStatus);
+
+// Video notes (PDF) — stored in public/uploads/notes, served at /uploads/notes/*
+// POST /api/v1/videos/:videoId/notes  (multipart/form-data, field: "notes")
+router.post("/:videoId/notes", protectAdmin, handleNotesUpload, videoController.uploadNotes);
+router.delete("/:videoId/notes", protectAdmin, videoController.removeNotes);
 
 // Public/Student routes - Get course videos
 router.get("/course/:courseId", protect, videoController.getCourseVideos);

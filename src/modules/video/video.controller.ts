@@ -245,6 +245,43 @@ class VideoController {
   }
 
   /**
+   * Upload (or replace) video notes PDF (Admin only)
+   * POST /api/v1/videos/:videoId/notes
+   * Content-Type: multipart/form-data
+   *
+   * Body:
+   * - notes: File (required, PDF)
+   */
+  async uploadNotes(req: Request, res: Response) {
+    try {
+      if (!req.file) {
+        return errorResponse(res, "PDF ফাইল সিলেক্ট করুন", 400);
+      }
+
+      const videoId = req.params.videoId as string;
+      const video = await videoService.attachNotes(videoId, req.file);
+      return successResponse(res, video, "নোট সফলভাবে আপলোড হয়েছে");
+    } catch (error: any) {
+      console.error("❌ Notes upload error:", error.message);
+      return errorResponse(res, error.message, error.message === "Video not found" ? 404 : 500);
+    }
+  }
+
+  /**
+   * Remove video notes PDF (Admin only)
+   * DELETE /api/v1/videos/:videoId/notes
+   */
+  async removeNotes(req: Request, res: Response) {
+    try {
+      const videoId = req.params.videoId as string;
+      const video = await videoService.removeNotes(videoId);
+      return successResponse(res, video, "নোট মুছে ফেলা হয়েছে");
+    } catch (error: any) {
+      return errorResponse(res, error.message, error.message === "Video not found" ? 404 : 500);
+    }
+  }
+
+  /**
    * Check video encoding status (Admin only)
    * GET /api/v1/videos/:videoId/status
    */

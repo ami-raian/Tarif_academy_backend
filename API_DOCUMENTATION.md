@@ -760,7 +760,46 @@ Videos **Bunny.net CDN** তে store ও stream হয়।
 
 **Auth:** `protectAdmin`
 
-> Bunny.net থেকেও মুছে যাবে এবং database থেকেও।
+> Bunny.net থেকেও মুছে যাবে এবং database থেকেও। Video এর নোট (PDF) থাকলে সেটাও মুছে যাবে।
+
+---
+
+### POST `/videos/:videoId/notes`
+
+**Video এর লেকচার নোট (PDF) আপলোড / পরিবর্তন করুন**
+
+**Auth:** `protectAdmin`
+
+**Content-Type:** `multipart/form-data`
+
+| Field | Type | Required | বিবরণ |
+|-------|------|----------|-------|
+| `notes` | File | ✅ | শুধুমাত্র PDF, সর্বোচ্চ 50MB |
+
+> ফাইল `public/uploads/notes/` এ সেভ হয় এবং `/uploads/notes/<file>.pdf` থেকে serve হয়। আগে নোট থাকলে পুরনো ফাইল মুছে নতুনটা বসে যাবে।
+
+**Response:** আপডেট হওয়া video — `notesUrl`, `notesFileName`, `notesSize` সহ
+
+```json
+{
+  "data": {
+    "_id": "...",
+    "notesUrl": "/uploads/notes/notes-1771699971547-141270687.pdf",
+    "notesFileName": "Lecture-1-notes.pdf",
+    "notesSize": 2483712
+  }
+}
+```
+
+> Student দের `GET /videos/course/:courseId` response এ unlocked video গুলোর সাথে `notesUrl`, `notesFileName`, `notesSize` আসে।
+
+---
+
+### DELETE `/videos/:videoId/notes`
+
+**Video এর নোট (PDF) মুছে ফেলুন**
+
+**Auth:** `protectAdmin`
 
 ---
 
@@ -1973,6 +2012,8 @@ Bunny.net webhook miss হলে manual recovery হিসেবে ব্যব
 | GET    | `/videos/:id/status`                | Admin       | Encoding status          |
 | PATCH  | `/videos/:id`                       | Admin       | Video update             |
 | DELETE | `/videos/:id`                       | Admin       | Video মুছুন              |
+| POST   | `/videos/:id/notes`                 | Admin       | নোট (PDF) আপলোড          |
+| DELETE | `/videos/:id/notes`                 | Admin       | নোট (PDF) মুছুন          |
 | GET    | `/enrollments/admin/all`            | Admin       | সব enrollment            |
 | PATCH  | `/enrollments/:id/approve`          | Admin       | Approve                  |
 | PATCH  | `/enrollments/:id/reject`           | Admin       | Reject                   |
